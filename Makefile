@@ -2,6 +2,11 @@
 
 APP := .build/Murmur.app
 
+## Install target. ~/Applications needs no sudo and is indexed by Spotlight and
+## Finder just like /Applications. Override for a system-wide install:
+##     make install INSTALL_DIR=/Applications   (will prompt for sudo)
+INSTALL_DIR ?= $(HOME)/Applications
+
 build:
 	swift build
 
@@ -22,13 +27,15 @@ run: bundle
 	@echo ""
 	@echo "On first run click the warning triangle -> Settings... and grant all three."
 
-## Copy into /Applications. TCC grants follow the bundle ID + signature, not the
-## path, so this does not cost you your permissions.
+## Copy into $(INSTALL_DIR). TCC grants follow the bundle ID + signature, not
+## the path, so moving the app does not cost you your permissions.
 install: release
 	@pkill -x Murmur 2>/dev/null || true
-	rm -rf /Applications/Murmur.app
-	cp -R $(APP) /Applications/Murmur.app
-	open /Applications/Murmur.app
+	@mkdir -p "$(INSTALL_DIR)"
+	rm -rf "$(INSTALL_DIR)/Murmur.app"
+	cp -R $(APP) "$(INSTALL_DIR)/Murmur.app"
+	open "$(INSTALL_DIR)/Murmur.app"
+	@echo "Installed to $(INSTALL_DIR)/Murmur.app"
 
 cert:
 	./scripts/make-cert.sh
