@@ -1,0 +1,43 @@
+.PHONY: build bundle run clean cert release install reset-tcc
+
+APP := .build/Murmur.app
+
+build:
+	swift build
+
+bundle:
+	./scripts/bundle.sh
+
+release:
+	CONFIG=release ./scripts/bundle.sh
+
+run: bundle
+	@pkill -x Murmur 2>/dev/null || true
+	@sleep 0.3
+	open $(APP)
+	@echo ""
+	@echo "Murmur is running. Its menu bar icon reflects state:"
+	@echo "    (!)  warning triangle  -> permissions needed (expected on first run)"
+	@echo "    mic                    -> ready, hold your hotkey to dictate"
+	@echo ""
+	@echo "On first run click the warning triangle -> Settings... and grant all three."
+
+## Copy into /Applications. TCC grants follow the bundle ID + signature, not the
+## path, so this does not cost you your permissions.
+install: release
+	@pkill -x Murmur 2>/dev/null || true
+	rm -rf /Applications/Murmur.app
+	cp -R $(APP) /Applications/Murmur.app
+	open /Applications/Murmur.app
+
+cert:
+	./scripts/make-cert.sh
+
+## Last resort if permissions get into a bad state. You will have to re-approve.
+reset-tcc:
+	tccutil reset Accessibility com.alexchoo.murmur || true
+	tccutil reset ListenEvent com.alexchoo.murmur || true
+	tccutil reset Microphone com.alexchoo.murmur || true
+
+clean:
+	rm -rf .build
