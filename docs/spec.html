@@ -186,7 +186,7 @@
     <h1>Push-to-talk dictation, defined once</h1>
     <p class="standfirst">Everything needed to rebuild Murmur on a platform that isn't macOS. This describes <strong>behaviour and contracts, not APIs</strong> — the macOS implementation is one conforming instance, referenced only as an example.</p>
     <dl class="meta">
-      <div><dt>Version</dt><dd>1.1</dd></div>
+      <div><dt>Version</dt><dd>1.2</dd></div>
       <div><dt>Reference impl</dt><dd>macOS 26, Swift 6</dd></div>
       <div><dt>Targets</dt><dd>iOS, Windows, Linux</dd></div>
       <div><dt>Keywords</dt><dd>RFC 2119</dd></div>
@@ -324,13 +324,21 @@
         <p>The system <span class="kw">SHOULD</span> pass the destination application's identity to the model so register can adapt.</p>
       </div></li>
       <li class="req"><span class="rid">FM-5</span><div>
-        <p>If the model is unavailable, errors, or returns empty, the system <span class="kw">MUST</span> insert the raw transcript rather than nothing.</p>
+        <p>If the model is unavailable, errors, or returns empty, the system <span class="kw">MUST</span> insert the raw transcript rather than nothing — and <span class="kw">MUST</span> surface that it did (FM-9).</p>
       </div></li>
       <li class="req"><span class="rid">FM-6</span><div>
         <p>Sessions <span class="kw">MUST</span> be independent — no conversational history carries between utterances.</p>
       </div></li>
       <li class="req"><span class="rid">FM-7</span><div>
         <p>A raw mode bypassing cleanup <span class="kw">SHOULD</span> be available for code and identifiers.</p>
+      </div></li>
+      <li class="req"><span class="rid">FM-8</span><div>
+        <p>The system <span class="kw">MUST</span> verify that the model returned a rewrite rather than a reply, and fall back to the raw transcript when it did not. Comparing how much of the output's vocabulary the speaker actually said is sufficient: a cleanup retains nearly all of it, a reply almost none.</p>
+        <p class="why">Prompt structure (FM-3) makes replies rare, not impossible. This check is independent of prompt quality and of which model is behind the interface, so it keeps holding when either changes.</p>
+      </div></li>
+      <li class="req"><span class="rid">FM-9</span><div>
+        <p>Whenever cleanup is unavailable, disabled or bypassed, the system <span class="kw">MUST</span> say so in the interface, and <span class="kw">SHOULD</span> offer the route to re-enable it.</p>
+        <p class="why">Silent degradation is indistinguishable from a working app producing poor output. In the reference implementation twenty-eight dictations were inserted uncleaned before anyone noticed the model was switched off at the OS level — the app looked healthy the whole time.</p>
       </div></li>
     </ul>
 
@@ -618,7 +626,9 @@ Rules:
           <tr><th scope="row">Wrong clipboard pasted</th><td>Clipboard restored before the target consumed the paste</td><td>IN-3</td></tr>
           <tr><th scope="row">Garbled or clipped audio</th><td>Real-time buffer retained instead of copied</td><td>AU-3</td></tr>
           <tr><th scope="row">Crash on first utterance</th><td>Audio callback bound to a UI thread or actor; concurrency assertion fires on the audio thread</td><td>AU-3</td></tr>
-          <tr><th scope="row">Model answers the user</th><td>Transcript treated as a prompt rather than as data</td><td>FM-3</td></tr>
+          <tr><th scope="row">Model answers the user</th><td>Transcript passed as the prompt, making it a message addressed to the model; instructions alone do not override that</td><td>FM-3, FM-8</td></tr>
+          <tr><th scope="row">Cleanup never runs, app looks fine</th><td>Model unavailable at the OS level and the fallback to raw was silent</td><td>FM-9</td></tr>
+          <tr><th scope="row">Output carries prompt scaffolding</th><td>Delimiters or quotes echoed back and inserted verbatim</td><td>FM-3</td></tr>
           <tr><th scope="row">Permissions lost each build</th><td>Unstable code signature; OS binds grants to identity</td><td>PM-3</td></tr>
           <tr><th scope="row">Feels sluggish</th><td>Audio stack or recognition initialised on keypress</td><td>AU-1, TR-1</td></tr>
           <tr><th scope="row">Text appears from silence</th><td>No empty-result guard; recogniser hallucinated</td><td>TR-5</td></tr>
@@ -660,6 +670,9 @@ Rules:
       <li>Holding the trigger for 30+ seconds does not drop or garble audio.</li>
       <li>A brief accidental key press produces no insertion and no error.</li>
       <li>Dictating "what time is it" inserts that phrase — it does not answer it.</li>
+      <li>Dictating "yeah", "hello", or "write me a poem" inserts those words and nothing else.</li>
+      <li>No prompt scaffolding — delimiters, quotes, preamble — ever reaches the cursor.</li>
+      <li>Disabling the cleanup model at the OS level produces a visible notice, not silently worse output.</li>
       <li>Self-correction: "Monday, no wait, Tuesday" yields only Tuesday.</li>
       <li>Revoking a permission mid-session surfaces the actionable state, not a crash.</li>
       <li>Killing the recogniser mid-utterance recovers to Idle within seconds.</li>
@@ -680,6 +693,7 @@ Rules:
   <footer class="col">
     <p>Murmur Platform Spec v1.1. Reference implementation: macOS 26, Swift 6. See <em>Murmur Internals</em> for how that implementation satisfies these contracts, and <em>Murmur Deck Tokens</em> for the interface system it is built from.</p>
     <p>Changes in 1.1: dictionary (DC), history (HS) and shell (AS) contracts added; history retention reversed from opt-in to bounded-by-default; filler removal clarified as model-instructed rather than deterministic.</p>
+    <p>Changes in 1.2: FM-3 records that prompt <em>structure</em>, not instruction wording, is what stops a model replying to dictation; FM-8 requires verifying the output is a rewrite; FM-9 forbids degrading silently when cleanup is unavailable.</p>
   </footer>
 
 </div>
