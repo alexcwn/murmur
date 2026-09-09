@@ -186,7 +186,7 @@
     <h1>Push-to-talk dictation, defined once</h1>
     <p class="standfirst">Everything needed to rebuild Murmur on a platform that isn't macOS. This describes <strong>behaviour and contracts, not APIs</strong> — the macOS implementation is one conforming instance, referenced only as an example.</p>
     <dl class="meta">
-      <div><dt>Version</dt><dd>1.0</dd></div>
+      <div><dt>Version</dt><dd>1.1</dd></div>
       <div><dt>Reference impl</dt><dd>macOS 26, Swift 6</dd></div>
       <div><dt>Targets</dt><dd>iOS, Windows, Linux</dd></div>
       <div><dt>Keywords</dt><dd>RFC 2119</dd></div>
@@ -195,15 +195,15 @@
 
   <section class="col">
     <div class="h2row"><span class="h2num">0</span><h2>Product definition</h2></div>
-    <p>A background utility that converts held-key speech into polished text inserted at the user's cursor, in any application, without the user leaving that application.</p>
-    <p>The product is <em>not</em> a transcription app. Nothing is saved, no window is opened, no file is produced. Success is measured by the user forgetting the tool exists.</p>
+    <p>A utility that converts held-key speech into polished text inserted at the user's cursor, in any application, without the user leaving that application.</p>
+    <p>The dictation path is the product; the window is where it is configured and reviewed. Success is measured by the user forgetting the tool exists while dictating, and opening the window only to teach it a word or check what it heard.</p>
 
     <h3>Non-goals</h3>
     <ul class="plain">
-      <li><b>Not a recorder.</b> Audio is never persisted to disk. It exists in memory for the duration of one utterance.</li>
+      <li><b>Not a recorder.</b> Audio is never persisted to disk — it exists in memory for one utterance. Transcribed <em>text</em> is retained (§2.10); audio never is.</li>
       <li><b>Not a meeting transcriber.</b> Optimised for 3–30 second utterances, not hour-long sessions.</li>
       <li><b>Not always-listening.</b> There is no wake word. Capture is bounded by an explicit physical gesture.</li>
-      <li><b>Not a text editor.</b> It inserts at the cursor and gets out of the way.</li>
+      <li><b>Not a text editor.</b> It inserts at the cursor and gets out of the way. History exists for review and re-copying, not for authoring.</li>
     </ul>
   </section>
 
@@ -236,7 +236,7 @@
 
   <section class="col">
     <div class="h2row"><span class="h2num">2</span><h2>Component contracts</h2></div>
-    <p class="lede">Seven components. Each is defined by what it guarantees, not how it is built.</p>
+    <p class="lede">Ten components. Each is defined by what it guarantees, not how it is built.</p>
 
     <h3>2.1 Trigger &nbsp;<code>HK</code></h3>
     <ul class="reqs">
@@ -310,6 +310,7 @@
       <li class="req"><span class="rid">FM-1</span><div>
         <p>The raw transcript <span class="kw">MUST</span> pass through a language model that removes disfluencies, applies punctuation and capitalisation, resolves spoken self-corrections, and honours dictated structure.</p>
         <p class="why">This is what separates the product from system dictation. Raw ASR output is not writing.</p>
+        <p class="why">This is an instruction to a model, not a deterministic filter. Filler removal is reliable but not guaranteed; where a hard guarantee is wanted, a fixed-list strip belongs alongside the correction pass (DC-4), not in the prompt.</p>
       </div></li>
       <li class="req"><span class="rid">FM-2</span><div>
         <p>The model <span class="kw">MUST</span> be instructed to preserve the speaker's wording and <span class="kw">MUST NOT</span> rephrase, summarise, expand or improve. See §5 for the reference prompt.</p>
@@ -368,7 +369,81 @@
       </div></li>
     </ul>
 
-    <h3>2.7 Permissions &nbsp;<code>PM</code></h3>
+    <h3>2.8 Shell &nbsp;<code>AS</code></h3>
+    <ul class="reqs">
+      <li class="req"><span class="rid">AS-1</span><div>
+        <p>The system <span class="kw">MUST</span> keep a background presence that outlives any window, so the trigger works while no window is open.</p>
+        <p class="why">The dictation path is the product. An app that must be foregrounded to work is a transcription tool, not this one.</p>
+      </div></li>
+      <li class="req"><span class="rid">AS-2</span><div>
+        <p>Closing the last window <span class="kw">MUST NOT</span> quit the application.</p>
+      </div></li>
+      <li class="req"><span class="rid">AS-3</span><div>
+        <p>The system <span class="kw">MUST</span> offer two capture routes with different destinations: trigger-held capture inserts into the previously focused application, and an explicit start/stop capture retains the text without inserting it.</p>
+        <p class="why">When the app's own window is focused there is no sensible insertion target, so the same gesture cannot mean the same thing in both contexts.</p>
+      </div></li>
+      <li class="req"><span class="rid">AS-4</span><div>
+        <p>A level indicator <span class="kw">SHOULD</span> display actual input amplitude during capture, derived from the same audio path as recognition.</p>
+        <p class="why">It is the only evidence that the microphone is hearing anything. A decorative animation that runs regardless is worse than no indicator at all.</p>
+      </div></li>
+    </ul>
+
+    <h3>2.9 Dictionary &nbsp;<code>DC</code></h3>
+    <ul class="reqs">
+      <li class="req"><span class="rid">DC-1</span><div>
+        <p>The system <span class="kw">MUST</span> support two entry types: a word or phrase the recogniser should know, and a correction pair — when you hear X, write Y. Both <span class="kw">MUST</span> be addable, editable, deletable and searchable.</p>
+      </div></li>
+      <li class="req"><span class="rid">DC-2</span><div>
+        <p>The dictionary <span class="kw">MUST</span> be applied twice: as context biasing the recogniser before transcription, and as a deterministic correction pass afterwards.</p>
+        <p class="why">Neither is sufficient alone. Biasing is a nudge the engine may ignore, but it is the only mechanism that can influence what the recogniser emits at all; the correction pass is guaranteed, but can only repair text that arrived in a recognisable form.</p>
+      </div></li>
+      <li class="req"><span class="rid">DC-3</span><div>
+        <p>The bias list <span class="kw">MUST</span> be capped (reference: 100 entries).</p>
+        <p class="why">Long context lists make these models drift and invent text on quiet audio, which is far worse than a missed term.</p>
+      </div></li>
+      <li class="req"><span class="rid">DC-4</span><div>
+        <p>The correction pass <span class="kw">MUST</span> run last — after the cleanup model — so nothing downstream can undo it.</p>
+      </div></li>
+      <li class="req"><span class="rid">DC-5</span><div>
+        <p>Matching <span class="kw">MUST</span> be whole-token, case-insensitive, longest-match-first and non-overlapping: a longer rule claims its span before a shorter one is offered it.</p>
+      </div></li>
+      <li class="req"><span class="rid">DC-6</span><div>
+        <p>A multi-part rule <span class="kw">MUST</span> match across optional whitespace, hyphens or underscores between its parts.</p>
+        <p class="why">Recognisers glue words together unpredictably. One rule for <code>cloud code</code> has to catch <code>CloudCode</code> and <code>Cloud-Code</code> too, or the user ends up maintaining a rule per spelling.</p>
+      </div></li>
+      <li class="req"><span class="rid">DC-7</span><div>
+        <p>A rule <span class="kw">MUST NOT</span> fire inside a longer word, and a multi-part rule <span class="kw">MUST NOT</span> fire on any single one of its parts.</p>
+        <p class="why">A rule for <code>cloud code</code> that touches <code>Cloudflare</code>, or the ordinary word <code>cloud</code>, silently corrupts prose — the worst failure available here, because the user will not notice it.</p>
+      </div></li>
+      <li class="req"><span class="rid">DC-8</span><div>
+        <p>The interface <span class="kw">MUST</span> warn when an entry's match side is an ordinary word of the user's language, and <span class="kw">SHOULD</span> grade the warning by how likely the rule is to fire accidentally.</p>
+        <p class="why">Single common words are the entire hazard; multi-word rules are safe by construction because they require adjacency.</p>
+      </div></li>
+      <li class="req"><span class="rid">DC-9</span><div>
+        <p>The dictionary <span class="kw">MUST</span> persist as a plain text file the user can edit by hand, and external edits <span class="kw">MUST</span> be picked up without a restart.</p>
+        <p class="why">Vocabulary is the one thing worth syncing between machines and checking into a dotfiles repo.</p>
+      </div></li>
+      <li class="req"><span class="rid">DC-10</span><div>
+        <p>Corrections that fired <span class="kw">MUST</span> be recorded against the transcription and shown to the user.</p>
+        <p class="why">Otherwise there is no way to tell whether the dictionary is doing anything, and dead entries accumulate unnoticed.</p>
+      </div></li>
+    </ul>
+
+    <h3>2.10 History &nbsp;<code>HS</code></h3>
+    <ul class="reqs">
+      <li class="req"><span class="rid">HS-1</span><div>
+        <p>Completed transcriptions <span class="kw">MUST</span> be retained, searchable and individually copyable.</p>
+      </div></li>
+      <li class="req"><span class="rid">HS-2</span><div>
+        <p>Both the raw transcript and the final text <span class="kw">MUST</span> be retained.</p>
+        <p class="why">It is the only way for the user to see what the cleanup pass and the dictionary actually changed, and to judge whether either is misbehaving.</p>
+      </div></li>
+      <li class="req"><span class="rid">HS-3</span><div>
+        <p>History <span class="kw">MUST</span> be bounded (reference: 500 entries), text only, and deletable both individually and entirely.</p>
+      </div></li>
+    </ul>
+
+    <h3>2.11 Permissions &nbsp;<code>PM</code></h3>
     <ul class="reqs">
       <li class="req"><span class="rid">PM-1</span><div>
         <p>The system <span class="kw">MUST</span> enumerate every required privilege, report each one's state individually, and offer a direct route to grant it.</p>
@@ -509,14 +584,18 @@ Rules:
           <tr><th scope="row">FM cleanup</th><td class="done">Foundation Models</td><td class="done">Phi Silica / Aion Instruct</td><td class="done">Foundation Models</td></tr>
           <tr><th scope="row">IN insertion</th><td class="done">AXSelectedText, then ⌘V</td><td class="done">UI Automation TextPattern, then SendInput</td><td>Keyboard extension textDocumentProxy only</td></tr>
           <tr><th scope="row">FB overlay</th><td class="done">Non-activating panel</td><td class="done">WS_EX_NOACTIVATE layered window</td><td>Keyboard accessory view</td></tr>
-          <tr><th scope="row">Residency</th><td class="done">Menu bar agent</td><td class="done">Tray application</td><td>Keyboard extension + container app</td></tr>
+          <tr><th scope="row">DC biasing</th><td class="done">AnalysisContext.contextualStrings</td><td class="done">Recogniser constraint / grammar hints</td><td class="done">AnalysisContext.contextualStrings</td></tr>
+          <tr><th scope="row">DC correction</th><td class="done">Regex pass, platform-neutral</td><td class="done">Regex pass, platform-neutral</td><td class="done">Regex pass, platform-neutral</td></tr>
+          <tr><th scope="row">DC danger list</th><td class="done">/usr/share/dict/words</td><td>No system word list — ship one</td><td>No system word list — ship one</td></tr>
+          <tr><th scope="row">AS shell</th><td class="done">Window + menu bar agent</td><td class="done">Window + tray application</td><td>Container app + keyboard extension</td></tr>
+          <tr><th scope="row">HS storage</th><td class="done">JSON in Application Support</td><td class="done">JSON in %APPDATA%</td><td class="done">JSON in App Group container</td></tr>
         </tbody>
       </table>
     </div>
     <div class="col">
       <div class="note">
         <p><b>iOS restructures the product</b></p>
-        <p>Requirements HK-1 through HK-5 cannot be satisfied on iOS at all, and PRD-1 must be renegotiated: the trigger becomes a touch-and-hold on a keyboard button rather than a system-wide modifier. Recognition and cleanup (TR, FM, §5) port unchanged; everything else is new.</p>
+        <p>Requirements HK-1 through HK-5 cannot be satisfied on iOS at all, and PRD-1 must be renegotiated: the trigger becomes a touch-and-hold on a keyboard button rather than a system-wide modifier. AS-3 collapses to a single capture route. Recognition, cleanup and the entire dictionary (TR, FM, DC, §5) port unchanged; everything else is new.</p>
         <p>Keyboard extensions are also memory-capped at roughly 30–70 MB, so recognition must run in the container app with results passed back through shared storage.</p>
       </div>
       <div class="note">
@@ -542,6 +621,13 @@ Rules:
           <tr><th scope="row">Permissions lost each build</th><td>Unstable code signature; OS binds grants to identity</td><td>PM-3</td></tr>
           <tr><th scope="row">Feels sluggish</th><td>Audio stack or recognition initialised on keypress</td><td>AU-1, TR-1</td></tr>
           <tr><th scope="row">Text appears from silence</th><td>No empty-result guard; recogniser hallucinated</td><td>TR-5</td></tr>
+          <tr><th scope="row">Ordinary prose silently rewritten</th><td>A dictionary rule whose match side is a common word, or one anchored loosely enough to fire inside a longer word</td><td>DC-7, DC-8</td></tr>
+          <tr><th scope="row">Dictionary appears to do nothing</th><td>Biasing used alone; the engine ignored the hint and no correction pass exists to catch it</td><td>DC-2</td></tr>
+          <tr><th scope="row">A taught term is right, then wrong again</th><td>Corrections applied before the cleanup model, which then rewrote them</td><td>DC-4</td></tr>
+          <tr><th scope="row">Recogniser invents text on quiet audio</th><td>Bias list grown without a cap until the model drifts</td><td>DC-3</td></tr>
+          <tr><th scope="row">Hand edits to the dictionary ignored</th><td>File watched by descriptor without re-opening after an atomic write replaced the inode</td><td>DC-9</td></tr>
+          <tr><th scope="row">App quits when the window closes</th><td>Default window-close-terminates behaviour left in place</td><td>AS-2</td></tr>
+          <tr><th scope="row">Dictating into the app's own window inserts nothing</th><td>Single capture route assuming an external target always exists</td><td>AS-3</td></tr>
         </tbody>
       </table>
     </div>
@@ -552,10 +638,14 @@ Rules:
     <p class="lede">Small, portable, and the only thing worth syncing between platforms.</p>
     <ul class="plain">
       <li><b>Settings</b> — trigger key, raw mode, engine selection, idle timeout, locale.</li>
-      <li><b>Personal dictionary</b> — corrected spellings the user has taught the system, injected into cleanup as vocabulary hints. Sync this first; it is what makes a second device feel already broken-in.</li>
-      <li><b>History</b> — optional, opt-in, capped, locally encrypted. Off by default under PRD-4.</li>
+      <li><b>Dictionary</b> — terms and correction pairs. A plain text file, hand-editable and watched for external change (DC-9). Sync this first; it is what makes a second device feel already broken-in.</li>
+      <li><b>History</b> — bounded, text only, deletable (HS-3). Raw and final text both retained so the user can see what changed.</li>
     </ul>
-    <p>Audio is never persisted. Transcripts are not persisted unless history is explicitly enabled.</p>
+    <p>Audio is never persisted. All three files stay local, in one visible folder, in a format the user can read, edit and delete without the app.</p>
+    <div class="note">
+      <p><b>Changed in 1.1</b></p>
+      <p>History was originally specified as opt-in and off by default, on the reasoning that dictation captures whatever is on the user's mind. It is now on by default and bounded instead. PRD-4 still holds — nothing leaves the device — but retention is no longer a privacy default the user has to switch on, it is a deliberate feature they can switch off.</p>
+    </div>
   </section>
 
   <section class="col">
@@ -574,11 +664,21 @@ Rules:
       <li>Killing the recogniser mid-utterance recovers to Idle within seconds.</li>
       <li>Key release to visible text stays under 1 second for a 10-word utterance.</li>
       <li>The OS microphone indicator is dark 30 seconds after the last dictation.</li>
+      <li>A two-word correction fires on the spaced, glued and hyphenated forms alike.</li>
+      <li>That same rule leaves a longer word sharing its first part untouched, and leaves that part alone in isolation.</li>
+      <li>Where two rules overlap, the longer one wins and the shorter still fires elsewhere in the same sentence.</li>
+      <li>Adding a single common word as a match target raises a visible warning.</li>
+      <li>Editing the dictionary file by hand updates the UI without a restart.</li>
+      <li>A transcription that was corrected shows which rules fired and what they changed.</li>
+      <li>Closing the window leaves the trigger working.</li>
+      <li>Start/stop capture with the app focused retains the text and inserts nothing.</li>
+      <li>The level indicator sits at rest in silence and responds to speech.</li>
     </ul>
   </section>
 
   <footer class="col">
-    <p>Murmur Platform Spec v1.0. Reference implementation: macOS 26, Swift 6, ~1,260 lines. See <em>Murmur Internals</em> for how that implementation satisfies these contracts.</p>
+    <p>Murmur Platform Spec v1.1. Reference implementation: macOS 26, Swift 6. See <em>Murmur Internals</em> for how that implementation satisfies these contracts, and <em>Murmur Deck Tokens</em> for the interface system it is built from.</p>
+    <p>Changes in 1.1: dictionary (DC), history (HS) and shell (AS) contracts added; history retention reversed from opt-in to bounded-by-default; filler removal clarified as model-instructed rather than deterministic.</p>
   </footer>
 
 </div>
