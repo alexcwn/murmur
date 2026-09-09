@@ -2,7 +2,7 @@ import Foundation
 
 /// A word or phrase the recogniser should know: product names, jargon,
 /// colleagues. Used to bias the engine, and to normalise casing afterwards.
-struct DictionaryTerm: Identifiable, Codable, Equatable, Sendable {
+nonisolated struct DictionaryTerm: Identifiable, Codable, Equatable, Sendable {
     var id: UUID = UUID()
     /// The canonical spelling, exactly as it should be written.
     var text: String
@@ -10,7 +10,7 @@ struct DictionaryTerm: Identifiable, Codable, Equatable, Sendable {
 }
 
 /// "When you hear X, write Y."
-struct DictionaryCorrection: Identifiable, Codable, Equatable, Sendable {
+nonisolated struct DictionaryCorrection: Identifiable, Codable, Equatable, Sendable {
     var id: UUID = UUID()
     /// What the recogniser tends to produce.
     var heard: String
@@ -21,7 +21,7 @@ struct DictionaryCorrection: Identifiable, Codable, Equatable, Sendable {
 
 /// The on-disk shape. Deliberately plain and small so it can be edited by hand
 /// in any text editor, diffed, and checked into a dotfiles repo.
-struct MurmurDictionary: Codable, Equatable, Sendable {
+nonisolated struct MurmurDictionary: Codable, Equatable, Sendable {
     var version: Int = 1
     var terms: [DictionaryTerm] = []
     var corrections: [DictionaryCorrection] = []

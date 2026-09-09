@@ -18,7 +18,7 @@ import Foundation
 /// - **Longest first, no overlaps.** All rules are matched against the original
 ///   text; a longer rule claims its range before a shorter one can, and the
 ///   shorter one is then refused that region.
-struct CorrectionEngine {
+nonisolated struct CorrectionEngine {
 
     struct Rule {
         var pattern: NSRegularExpression

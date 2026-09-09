@@ -1,7 +1,7 @@
 import Foundation
 
 /// One completed dictation. Text only — audio is never persisted.
-struct Transcription: Identifiable, Codable, Equatable, Sendable {
+nonisolated struct Transcription: Identifiable, Codable, Equatable, Sendable {
     var id: UUID = UUID()
     var date: Date = .now
     /// What the recogniser produced, before cleanup or corrections.
@@ -20,7 +20,7 @@ struct Transcription: Identifiable, Codable, Equatable, Sendable {
     var hasCorrections: Bool { !corrections.isEmpty }
 }
 
-struct AppliedCorrection: Identifiable, Codable, Equatable, Sendable {
+nonisolated struct AppliedCorrection: Identifiable, Codable, Equatable, Sendable {
     var id: UUID = UUID()
     /// The literal text that was matched, as the recogniser wrote it.
     var matched: String
