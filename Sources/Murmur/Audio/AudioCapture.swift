@@ -16,6 +16,44 @@ import Speech
 /// Everything here is thread-safe on its own terms: `Gate` holds the lock, and
 /// the engine is only touched from the main thread via `DictationController`.
 nonisolated final class AudioCapture {
+
+    /// Publishes input level for the VU meter.
+    ///
+    /// Hangs off the same tap as capture but is completely separate from the
+    /// transcription path — it reads the buffer and computes RMS, and cannot
+    /// affect what the recogniser receives.
+    final class LevelMonitor: @unchecked Sendable {
+        private let lock = NSLock()
+        private var sink: (@Sendable (Float) -> Void)?
+
+        func setSink(_ sink: (@Sendable (Float) -> Void)?) {
+            lock.lock(); defer { lock.unlock() }
+            self.sink = sink
+        }
+
+        /// Called on the audio thread.
+        func submit(_ buffer: AVAudioPCMBuffer) {
+            lock.lock()
+            let sink = self.sink
+            lock.unlock()
+            guard let sink, let channels = buffer.floatChannelData, buffer.frameLength > 0 else { return }
+
+            let frames = Int(buffer.frameLength)
+            var sum: Float = 0
+            for i in 0..<frames {
+                let s = channels[0][i]
+                sum += s * s
+            }
+            let rms = (sum / Float(frames)).squareRoot()
+
+            // -50 dBFS reads as silence, 0 dBFS as full scale. Speech normally
+            // lands around -30 to -12, which puts the needle in the usable part
+            // of the arc rather than pinned at either end.
+            let db = 20 * log10(max(rms, 1e-7))
+            sink(max(0, min(1, (db + 50) / 50)))
+        }
+    }
+
     /// Shared with the real-time audio thread, so it carries its own lock.
     private final class Gate: @unchecked Sendable {
         private let lock = NSLock()
@@ -117,6 +155,7 @@ nonisolated final class AudioCapture {
 
     private let engine = AVAudioEngine()
     private let gate = Gate()
+    let level = LevelMonitor()
     private var isTapInstalled = false
     private var isRunning = false
 
@@ -140,8 +179,9 @@ nonisolated final class AudioCapture {
             throw CaptureError.noInputDevice
         }
 
-        input.installTap(onBus: 0, bufferSize: 2048, format: format) { [gate] buffer, _ in
+        input.installTap(onBus: 0, bufferSize: 2048, format: format) { [gate, level] buffer, _ in
             gate.submit(buffer)
+            level.submit(buffer)
         }
         isTapInstalled = true
     }
@@ -161,6 +201,7 @@ nonisolated final class AudioCapture {
         guard isRunning else { return }
         engine.stop()
         isRunning = false
+        level.setSink(nil)
     }
 
     /// Opens the gate and returns the buffers for one dictation.

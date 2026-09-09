@@ -23,17 +23,11 @@ make cert     # once — creates a stable signing identity, asks for your passwo
 make run      # build, bundle, sign, launch
 ```
 
-The menu bar icon *is* the status display — there is no window:
+Murmur is a normal Mac app: Dock icon, app menu, resizable window, Settings on
+⌘,. The menu bar item is secondary — status and a recording toggle for when
+you're working in another app.
 
-| Icon | Meaning |
-|---|---|
-| ⚠ warning triangle | Permissions needed — expected on first run |
-| mic | Ready; hold your hotkey to dictate |
-| filled mic | Listening |
-| ⋯ | Transcribing / cleaning up |
-
-**On first run you are looking for a warning triangle, not a mic.** Click it →
-Settings… and grant these three:
+Grant three permissions on first run (Settings → Permissions):
 
 | Permission | Why |
 |---|---|
@@ -44,6 +38,40 @@ Settings… and grant these three:
 If you use the default **Fn** hotkey, also set System Settings → Keyboard →
 "Press 🌐 key to" → **Do Nothing**, or the globe key opens the emoji picker at
 the same time.
+
+## The window
+
+- **Transport deck** — VU meter with real ballistics, counter, record lamp,
+  Record/Stop, raw-mode switch.
+- **Transcriptions** — searchable history with copy on each entry, and an
+  inline record of which dictionary corrections fired.
+- **Dictionary** — words to teach it, and "when you hear X, write Y" pairs.
+
+Two capture routes, deliberately different:
+
+- **Hold the hotkey** in another app → text is inserted at your cursor.
+- **Press Record** in the window → Murmur is frontmost, so there is nothing
+  sensible to inject into; the transcription is kept in history instead.
+
+## The dictionary
+
+Lives at `~/Library/Application Support/Murmur/dictionary.json` and is meant to
+be edited by hand as well as in the UI — external edits are picked up live.
+
+It works two ways, because neither is sufficient alone:
+
+1. **Bias before transcription.** Terms are passed to the recogniser as
+   contextual strings so it leans toward producing them. Capped at 100 entries:
+   long context lists make these models drift and invent text on quiet audio.
+2. **Correct after transcription.** Runs last, after the cleanup model, so
+   nothing downstream can undo it. Whole-word, case-insensitive, longest match
+   first.
+
+The correction pass tolerates the ways models glue words together — one rule for
+`cloud code` also catches `CloudCode` and `Cloud-Code` — while anchoring on
+alphanumeric boundaries so it can never fire inside `Cloudflare`, and never on
+the ordinary word `cloud` alone. Adding a single common English word as a match
+target raises a warning in the UI.
 
 ## Why `make cert` matters
 
@@ -102,6 +130,11 @@ Two seams are deliberate:
 - **Not sandboxed.** The sandbox denies both global event taps and the
   Accessibility APIs. This rules out the Mac App Store; Developer ID +
   notarization is the distribution path.
+- **The design system is `Sources/Murmur/Design/Tokens.swift`**, mirroring
+  `docs/tokens.html`. Every view reads from it; no component declares a literal
+  color, size, radius or duration. 1980s field recorder — two decks rather than
+  one theme inverted, radii capped at 5pt, and a VU needle on the real 300ms
+  ballistic rather than a bar graph.
 
 ## Layout
 
@@ -133,11 +166,14 @@ make clean
 
 ## Not built yet
 
+- App icon (the Dock shows the generic placeholder)
 - Command Mode (select text → "make this more formal")
-- Personal dictionary learned from corrections
-- Dictation history
+- Learning corrections automatically from edits
 - Parakeet / WhisperKit engines behind `TranscriptionEngine`
 - VAD gating for silence trimming
 - Launch at login
-- App icon and branding
 - Notarized distribution
+
+`Tests/MurmurTests` covers the correction engine but is not wired into
+`Package.swift`: XCTest ships with Xcode, not Command Line Tools. Add a
+`.testTarget` once Xcode is installed.

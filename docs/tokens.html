@@ -1,0 +1,533 @@
+<title>Murmur Deck Tokens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Azeret+Mono:wght@400;500;600&display=swap">
+<style>
+  /* ============================================================
+     PAGE CHROME — theme-aware neutral. Deliberately quiet so the
+     two deck specimens below are what you actually judge.
+     ============================================================ */
+  :root {
+    --pg-bg: #eceae5;
+    --pg-surface: #f7f6f3;
+    --pg-ink: #1d1c1a;
+    --pg-soft: #4a4842;
+    --pg-mute: #7a776f;
+    --pg-rule: #d2cfc8;
+    --pg-rule-soft: #e2dfd9;
+    --pg-accent: #b83228;
+
+    --ui: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: "Azeret Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --pg-bg: #17181a;
+      --pg-surface: #1f2124;
+      --pg-ink: #e4e2dc;
+      --pg-soft: #b0ada6;
+      --pg-mute: #85827b;
+      --pg-rule: #32353a;
+      --pg-rule-soft: #26292d;
+      --pg-accent: #d9483c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --pg-bg: #17181a;
+    --pg-surface: #1f2124;
+    --pg-ink: #e4e2dc;
+    --pg-soft: #b0ada6;
+    --pg-mute: #85827b;
+    --pg-rule: #32353a;
+    --pg-rule-soft: #26292d;
+    --pg-accent: #d9483c;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--pg-bg); color: var(--pg-ink);
+    font-family: var(--ui); font-size: 15px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1140px; margin: 0 auto; padding: clamp(2rem,5vw,3.5rem) clamp(1rem,4vw,2.25rem) 5rem; }
+  .col { max-width: 66ch; }
+
+  .eyebrow {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--pg-mute); margin: 0 0 1rem;
+  }
+  .eyebrow b { color: var(--pg-accent); font-weight: 600; }
+  h1 { font-family: var(--ui); font-weight: 700; font-size: clamp(2rem,5vw,2.9rem); line-height: 1.04; letter-spacing: -0.02em; margin: 0 0 0.9rem; text-wrap: balance; }
+  .standfirst { font-size: 1.16rem; color: var(--pg-soft); margin: 0 0 1.6rem; text-wrap: pretty; }
+  .standfirst strong { color: var(--pg-ink); font-weight: 600; }
+
+  section { margin-top: clamp(2.6rem,6vw,4rem); }
+  .h2row { display: flex; align-items: baseline; gap: 0.75rem; border-bottom: 2px solid var(--pg-ink); padding-bottom: 0.45rem; margin-bottom: 1.1rem; }
+  .h2num { font-family: var(--mono); font-size: 0.95rem; font-weight: 600; color: var(--pg-accent); }
+  h2 { font-family: var(--ui); font-weight: 700; font-size: 1.7rem; letter-spacing: -0.012em; margin: 0; }
+  .lede { color: var(--pg-soft); margin: 0 0 1.4rem; text-wrap: pretty; }
+  p { margin: 0 0 1rem; text-wrap: pretty; }
+  code { font-family: var(--mono); font-size: 0.85em; background: var(--pg-surface); border: 1px solid var(--pg-rule-soft); padding: 0.06em 0.32em; }
+
+  /* ============================================================
+     DECK SPECIMENS — literal colors, not theme tokens. These are
+     two real machines: a cream/silver faceplate and a black one.
+     ============================================================ */
+  .decks { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px,1fr)); gap: 1.5rem; }
+
+  .deck {
+    --r-sm: 2px; --r-md: 3px; --r-lg: 5px;
+    padding: 18px;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--seam);
+    background: var(--chassis);
+    box-shadow: var(--sh-panel);
+  }
+
+  .deck.light {
+    --chassis:#c9c5bc; --panel:#d8d4cb; --panel-hi:#e2ded5; --recess:#b3afa6;
+    --control:#dedad1; --control-press:#c2beb5; --alu:#a8a49b;
+    --seam:#8f8b83; --edge-hi:#f2efe8; --edge-lo:#9c988f;
+    --txt:#2a2825; --txt-2:#5c5952; --label:#6b6860; --readout:#2f2d29;
+    --record:#b83228; --safe:#4f8f42; --warn:#c08420; --peak:#b83228;
+    --sh-panel: 0 1px 2px rgba(0,0,0,.22);
+    --sh-raise: 0 1px 0 var(--edge-hi) inset, 0 -1px 0 var(--edge-lo) inset, 0 1px 2px rgba(0,0,0,.28);
+    --sh-press: 0 1px 3px rgba(0,0,0,.42) inset, 0 -1px 0 var(--edge-hi) inset;
+    --sh-recess: 0 2px 4px rgba(0,0,0,.35) inset, 0 -1px 0 rgba(255,255,255,.42) inset;
+  }
+  .deck.dark {
+    --chassis:#1a1b1c; --panel:#26282a; --panel-hi:#303336; --recess:#131415;
+    --control:#3a3d40; --control-press:#232527; --alu:#8e9296;
+    --seam:#0e0f10; --edge-hi:#4d5155; --edge-lo:#0d0e0f;
+    --txt:#dcdad4; --txt-2:#9b9891; --label:#8a8781; --readout:#c9c5bb;
+    --record:#cf3b2e; --safe:#6fae5a; --warn:#e0a13a; --peak:#cf3b2e;
+    --sh-panel: 0 1px 3px rgba(0,0,0,.6);
+    --sh-raise: 0 1px 0 var(--edge-hi) inset, 0 -1px 0 var(--edge-lo) inset, 0 2px 3px rgba(0,0,0,.55);
+    --sh-press: 0 2px 4px rgba(0,0,0,.7) inset, 0 -1px 0 rgba(255,255,255,.07) inset;
+    --sh-recess: 0 2px 5px rgba(0,0,0,.75) inset, 0 -1px 0 rgba(255,255,255,.06) inset;
+  }
+
+  .deck-name {
+    font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--label); margin: 0 0 12px;
+    display: flex; justify-content: space-between;
+  }
+
+  .faceplate {
+    background: var(--panel);
+    /* brushed aluminium: fine vertical striation, no gradient sheen */
+    background-image: repeating-linear-gradient(90deg,
+      rgba(255,255,255,.05) 0 1px, rgba(0,0,0,.035) 1px 2px);
+    border: 1px solid var(--seam);
+    border-top-color: var(--edge-hi);
+    border-radius: var(--r-md);
+    padding: 14px;
+    box-shadow: var(--sh-panel);
+  }
+
+  .well {
+    background: var(--recess); border-radius: var(--r-sm);
+    box-shadow: var(--sh-recess); padding: 10px 12px;
+  }
+
+  .lbl {
+    font-family: var(--ui); font-size: 9px; font-weight: 600;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--label);
+  }
+
+  .rdo { font-family: var(--mono); font-weight: 500; color: var(--readout); font-variant-numeric: tabular-nums; }
+
+  /* transport */
+  .transport { display: flex; gap: 6px; margin-top: 12px; }
+  .btn {
+    flex: 1; padding: 9px 6px 8px; border: 1px solid var(--seam);
+    border-radius: var(--r-sm); background: var(--control);
+    box-shadow: var(--sh-raise);
+    font-family: var(--ui); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--txt);
+    cursor: default; text-align: center; user-select: none;
+    transition: box-shadow 60ms cubic-bezier(.2,0,0,1), background 60ms cubic-bezier(.2,0,0,1);
+  }
+  .btn.is-pressed { background: var(--control-press); box-shadow: var(--sh-press); }
+  .btn.rec { color: var(--record); }
+
+  .lamp {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--record); border: 1px solid rgba(0,0,0,.45);
+    box-shadow: 0 0 5px 0 var(--record), 0 1px 0 rgba(255,255,255,.18) inset;
+    display: inline-block; vertical-align: -1px;
+  }
+  .lamp.off { background: #4a2320; box-shadow: 0 1px 0 rgba(255,255,255,.08) inset; }
+
+  .meter-row { display: flex; gap: 12px; align-items: flex-end; }
+  .vu { flex: 1; }
+  .vu svg { display: block; width: 100%; height: auto; }
+  .vu-face { fill: var(--recess); stroke: var(--seam); stroke-width: 1; }
+  .vu-arc { fill: none; stroke: var(--txt-2); stroke-width: 1.2; }
+  .vu-arc-red { fill: none; stroke: var(--peak); stroke-width: 2.2; }
+  .vu-tick { stroke: var(--txt-2); stroke-width: 1; }
+  .vu-tick-red { stroke: var(--peak); stroke-width: 1.2; }
+  .vu-num { font-family: var(--mono); font-size: 7.5px; font-weight: 500; fill: var(--txt-2); }
+  .vu-num-red { fill: var(--peak); }
+  .vu-vu { font-family: var(--ui); font-size: 8px; font-weight: 700; letter-spacing: 0.2em; fill: var(--label); }
+  .vu-needle { stroke: var(--txt); stroke-width: 1.6; stroke-linecap: round; }
+  .vu-hub { fill: var(--alu); stroke: var(--seam); stroke-width: 1; }
+  .vu-peak { stroke: var(--peak); stroke-width: 1.6; }
+
+  .counter { text-align: right; }
+  .counter .n { font-family: var(--mono); font-size: 26px; font-weight: 600; color: var(--readout); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+
+  /* ============================================================
+     TOKEN TABLES
+     ============================================================ */
+  .grp { margin-bottom: 1.6rem; }
+  .grp h3 {
+    font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--pg-mute); margin: 0 0 0.6rem;
+    padding-bottom: 0.35rem; border-bottom: 1px solid var(--pg-rule);
+  }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(188px,1fr)); gap: 1px; background: var(--pg-rule); border: 1px solid var(--pg-rule); }
+  .sw { background: var(--pg-surface); padding: 0.55rem 0.6rem; display: flex; align-items: center; gap: 0.6rem; }
+  .chip { width: 34px; height: 34px; flex: none; border: 1px solid rgba(0,0,0,.3); border-radius: 2px; }
+  .sw-t { min-width: 0; }
+  .sw-n { font-family: var(--mono); font-size: 11px; font-weight: 500; display: block; overflow-wrap: anywhere; }
+  .sw-v { font-family: var(--mono); font-size: 10px; color: var(--pg-mute); display: block; }
+  .sw-v i { font-style: normal; opacity: .55; }
+
+  .scale { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--pg-rule); }
+  .scale li { display: grid; grid-template-columns: 10.5rem 4.5rem 1fr; gap: 0 0.9rem; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--pg-rule-soft); }
+  .scale .k { font-family: var(--mono); font-size: 11px; font-weight: 500; }
+  .scale .v { font-family: var(--mono); font-size: 11px; color: var(--pg-mute); font-variant-numeric: tabular-nums; }
+  .bar { height: 12px; background: var(--pg-accent); opacity: .8; }
+  .radbox { height: 30px; width: 52px; background: var(--pg-surface); border: 1.5px solid var(--pg-ink); }
+
+  .spec { border-top: 1px solid var(--pg-rule); }
+  .spec > div { display: grid; grid-template-columns: 11rem 1fr; gap: 0 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--pg-rule-soft); align-items: baseline; }
+  .spec .k { font-family: var(--mono); font-size: 11px; color: var(--pg-mute); }
+
+  .note { border-left: 3px solid var(--pg-accent); background: var(--pg-surface); padding: 0.9rem 1.1rem; margin: 1.2rem 0; font-size: 0.9rem; }
+  .note p { margin: 0; }
+  .note p + p { margin-top: 0.55rem; }
+  .note b { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--pg-accent); display: block; margin-bottom: 0.3rem; }
+
+  footer { margin-top: 3.5rem; padding-top: 1.1rem; border-top: 1px solid var(--pg-rule); font-family: var(--mono); font-size: 0.8rem; color: var(--pg-mute); max-width: 66ch; }
+
+  @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+</style>
+
+<div class="wrap">
+
+  <header class="col">
+    <p class="eyebrow">Murmur &nbsp;/&nbsp; <b>Design Tokens v1</b></p>
+    <h1>Field recorder, not a theme</h1>
+    <p class="standfirst">Two decks, one token set. <strong>Light is a cream-and-silver faceplate</strong> in the Marantz PMD register; <strong>dark is matte black with aluminium trim</strong>, closer to a TC-D5. Neither is an inversion of the other — both are machines that actually existed.</p>
+    <p>Approve or redirect these before any view gets written. Every component pulls from the names below; nothing hard-codes a value.</p>
+  </header>
+
+  <section>
+    <div class="h2row col"><span class="h2num">01</span><h2>The two decks</h2></div>
+    <p class="lede col">Same controls, same tokens, different material. Everything below is built only from the tokens in §02–§06.</p>
+
+    <div class="decks">
+
+      <div class="deck light">
+        <p class="deck-name"><span>Deck / Light</span><span>Cream + Silver</span></p>
+        <div class="faceplate">
+          <div class="meter-row">
+            <div class="vu">
+              <svg viewBox="0 0 260 126" role="img" aria-label="VU meter with a needle resting in the mid scale, red zone above zero">
+                <rect class="vu-face" x="8" y="8" width="244" height="112" rx="2"></rect>
+                <path class="vu-arc" d="M 61.1 54.1 A 90 90 0 0 1 163.7 28.6"></path>
+                <path class="vu-arc-red" d="M 163.7 28.6 A 90 90 0 0 1 198.9 54.1"></path>
+                <g class="ticks-l"></g>
+                <text class="vu-vu" x="130" y="100" text-anchor="middle">VU</text>
+                <line class="vu-peak peak-l" x1="130" y1="30" x2="130" y2="22" transform="rotate(-50 130 112)"></line>
+                <line class="vu-needle needle-l" x1="130" y1="112" x2="130" y2="30" transform="rotate(-50 130 112)"></line>
+                <circle class="vu-hub" cx="130" cy="112" r="5"></circle>
+              </svg>
+            </div>
+            <div class="counter">
+              <div class="lbl">Counter</div>
+              <div class="n">00:14</div>
+              <div class="lbl" style="margin-top:6px"><span class="lamp"></span> &nbsp;Rec</div>
+            </div>
+          </div>
+          <div class="transport">
+            <div class="btn rec is-pressed">Rec</div>
+            <div class="btn">Stop</div>
+            <div class="btn">Dict</div>
+          </div>
+        </div>
+        <div class="well" style="margin-top:12px">
+          <span class="lbl">Last</span>
+          <div class="rdo" style="font-size:12px;margin-top:3px">Ship it Wednesday.</div>
+        </div>
+      </div>
+
+      <div class="deck dark">
+        <p class="deck-name"><span>Deck / Dark</span><span>Matte + Alu</span></p>
+        <div class="faceplate">
+          <div class="meter-row">
+            <div class="vu">
+              <svg viewBox="0 0 260 126" role="img" aria-label="VU meter with a needle resting in the mid scale, red zone above zero">
+                <rect class="vu-face" x="8" y="8" width="244" height="112" rx="2"></rect>
+                <path class="vu-arc" d="M 61.1 54.1 A 90 90 0 0 1 163.7 28.6"></path>
+                <path class="vu-arc-red" d="M 163.7 28.6 A 90 90 0 0 1 198.9 54.1"></path>
+                <g class="ticks-d"></g>
+                <text class="vu-vu" x="130" y="100" text-anchor="middle">VU</text>
+                <line class="vu-peak peak-d" x1="130" y1="30" x2="130" y2="22" transform="rotate(-50 130 112)"></line>
+                <line class="vu-needle needle-d" x1="130" y1="112" x2="130" y2="30" transform="rotate(-50 130 112)"></line>
+                <circle class="vu-hub" cx="130" cy="112" r="5"></circle>
+              </svg>
+            </div>
+            <div class="counter">
+              <div class="lbl">Counter</div>
+              <div class="n">00:14</div>
+              <div class="lbl" style="margin-top:6px"><span class="lamp"></span> &nbsp;Rec</div>
+            </div>
+          </div>
+          <div class="transport">
+            <div class="btn rec is-pressed">Rec</div>
+            <div class="btn">Stop</div>
+            <div class="btn">Dict</div>
+          </div>
+        </div>
+        <div class="well" style="margin-top:12px">
+          <span class="lbl">Last</span>
+          <div class="rdo" style="font-size:12px;margin-top:3px">Ship it Wednesday.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="note col">
+      <p><b>Needle ballistics are a real spec</b></p>
+      <p>A VU meter reaches 99% of a steady tone in <strong>300&nbsp;ms</strong> and falls at the same rate — that's the standard, and it's why analogue meters feel weighted rather than twitchy. The needles above use it. A digital bar graph tracking instantaneous amplitude looks nothing like this, which is the whole point of asking for a needle.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="h2row col"><span class="h2num">02</span><h2>Color</h2></div>
+    <p class="lede col">Semantic names, two values each — light deck, then dark deck. One accent only: <code>signal.record</code>. Amber and green appear solely on level instrumentation.</p>
+
+    <div class="grp">
+      <h3>Surface</h3>
+      <div class="swatches">
+        <div class="sw"><span class="chip" style="background:#c9c5bc"></span><span class="sw-t"><b class="sw-n">surface.chassis</b><span class="sw-v">#C9C5BC <i>/ #1A1B1C</i></span></span></div>
+        <div class="sw"><span class="chip" style="background:#d8d4cb"></span><span class="sw-t"><b class="sw-n">surface.panel</b><span class="sw-v">#D8D4CB <i>/ #26282A</i></span></span></div>
+        <div class="sw"><span class="chip" style="background:#e2ded5"></span><span class="sw-t"><b class="sw-n">surface.panelRaised</b><span class="sw-v">#E2DED5 <i>/ #303336</i></span></span></div>
+        <div class="sw"><span class="chip" style="background:#b3afa6"></span><span class="sw-t"><b class="sw-n">surface.recess</b><span class="sw-v">#B3AFA6 <i>/ #131415</i></span></span></div>
+        <div class="sw"><span class="chip" style="background:#dedad1"></span><span class="sw-t"><b class="sw-n">surface.control</b><span class="sw-v">#DEDAD1 <i>/ #3A3D40</i></span></span></div>
+        <div class="sw"><span class="chip" style="background:#c2beb5"></span><span class="sw-t"><b class="sw-n">surface.controlPressed</b><span class="sw-v">#C2BEB5 <i>/ #232527</i></span></span></div>
+      </div>
+    </div>
+
+    <div class="grp">
+      <h3>Edge — hard seams, no soft borders</h3>
+      <div class="swatches">
+        <div class="sw"><span class="chip" style="background:#8f8b83"></span><span class="sw-t"><b class="sw-n">edge.seam</b><span class="sw-v">#8F8B83 <i>/ #0E0F10</i></span></span></div>
+        <div class="sw"><span class="chip" style="background:#f2efe8"></span><span class="sw-t"><b class="sw-n">edge.highlight</b><span class="sw-v">#F2EFE8 <i>/ #4D5155</i></span></span></div>
+        <div class="sw"><span class="chip" style="background:#9c988f"></span><span class="sw-t"><b class="sw-n">edge.shadow</b><span class="sw-v">#9C988F <i>/ #0D0E0F</i></span></span></div>
+        <div class="sw"><span class="chip" style="background:#a8a49b"></span><span class="sw-t"><b class="sw-n">edge.aluminium</b><span class="sw-v">#A8A49B <i>/ #8E9296</i></span></span></div>
+      </div>
+    </div>
+
+    <div class="grp">
+      <h3>Text</h3>
+      <div class="swatches">
+        <div class="sw"><span class="chip" style="background:#2a2825"></span><span class="sw-t"><b class="sw-n">text.primary</b><span class="sw-v">#2A2825 <i>/ #DCDAD4</i></span></span></div>
+        <div class="sw"><span class="chip" style="background:#5c5952"></span><span class="sw-t"><b class="sw-n">text.secondary</b><span class="sw-v">#5C5952 <i>/ #9B9891</i></span></span></div>
+        <div class="sw"><span class="chip" style="background:#6b6860"></span><span class="sw-t"><b class="sw-n">text.label</b><span class="sw-v">#6B6860 <i>/ #8A8781</i></span></span></div>
+        <div class="sw"><span class="chip" style="background:#2f2d29"></span><span class="sw-t"><b class="sw-n">text.readout</b><span class="sw-v">#2F2D29 <i>/ #C9C5BB</i></span></span></div>
+      </div>
+    </div>
+
+    <div class="grp">
+      <h3>Signal — the only saturated colors in the system</h3>
+      <div class="swatches">
+        <div class="sw"><span class="chip" style="background:#b83228"></span><span class="sw-t"><b class="sw-n">signal.record</b><span class="sw-v">#B83228 <i>/ #CF3B2E</i></span></span></div>
+        <div class="sw"><span class="chip" style="background:#4f8f42"></span><span class="sw-t"><b class="sw-n">signal.levelSafe</b><span class="sw-v">#4F8F42 <i>/ #6FAE5A</i></span></span></div>
+        <div class="sw"><span class="chip" style="background:#c08420"></span><span class="sw-t"><b class="sw-n">signal.levelWarn</b><span class="sw-v">#C08420 <i>/ #E0A13A</i></span></span></div>
+        <div class="sw"><span class="chip" style="background:#b83228"></span><span class="sw-t"><b class="sw-n">signal.levelPeak</b><span class="sw-v">#B83228 <i>/ #CF3B2E</i></span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="h2row col"><span class="h2num">03</span><h2>Type</h2></div>
+    <p class="lede col"><b>Archivo</b> for everything read as text or silkscreen. <b>Azeret Mono</b> for anything that counts — timings, levels, the tape counter. Both OFL, both bundled into the app so it never falls back.</p>
+
+    <div class="spec">
+      <div><span class="k">type.labelMicro<br>9 / +0.15em / UC</span><span style="font-size:9px;font-weight:600;letter-spacing:.15em;text-transform:uppercase">Input Level &nbsp;·&nbsp; Peak Hold &nbsp;·&nbsp; Dictionary</span></div>
+      <div><span class="k">type.label<br>10 / +0.14em / UC</span><span style="font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase">Record &nbsp;·&nbsp; Stop &nbsp;·&nbsp; Transcriptions</span></div>
+      <div><span class="k">type.labelLarge<br>11 / +0.12em / UC</span><span style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase">Settings</span></div>
+      <div><span class="k">type.bodySmall<br>12 / 1.5</span><span style="font-size:12px">Corrections applied: 2 &nbsp;·&nbsp; 4 seconds ago</span></div>
+      <div><span class="k">type.body<br>13 / 1.55</span><span style="font-size:13px">So I think we should ship it Wednesday.</span></div>
+      <div><span class="k">type.bodyLarge<br>15 / 1.5</span><span style="font-size:15px">So I think we should ship it Wednesday.</span></div>
+      <div><span class="k">type.title<br>18 / 600</span><span style="font-size:18px;font-weight:600">Dictionary</span></div>
+      <div><span class="k">type.display<br>24 / 700 / −0.02em</span><span style="font-size:24px;font-weight:700;letter-spacing:-.02em">Murmur</span></div>
+      <div><span class="k">type.readoutSmall<br>mono 12 / tnum</span><span style="font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums">−18.4 dB &nbsp; 00:03.240</span></div>
+      <div><span class="k">type.readout<br>mono 20 / 500 / tnum</span><span style="font-family:var(--mono);font-size:20px;font-weight:500;font-variant-numeric:tabular-nums">00:14</span></div>
+      <div><span class="k">type.readoutLarge<br>mono 32 / 600 / tnum</span><span style="font-family:var(--mono);font-size:32px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em">00:14.8</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="h2row col"><span class="h2num">04</span><h2>Space &amp; radius</h2></div>
+    <p class="lede col">4&nbsp;pt grid. Radii stay small on purpose — equipment has milled edges, not pillows. <strong>Nothing in this system exceeds 5&nbsp;pt.</strong></p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem">
+      <div>
+        <div class="grp"><h3>Space</h3></div>
+        <ul class="scale">
+          <li><span class="k">space.hair</span><span class="v">2</span><span class="bar" style="width:2px"></span></li>
+          <li><span class="k">space.tight</span><span class="v">4</span><span class="bar" style="width:4px"></span></li>
+          <li><span class="k">space.snug</span><span class="v">8</span><span class="bar" style="width:8px"></span></li>
+          <li><span class="k">space.base</span><span class="v">12</span><span class="bar" style="width:12px"></span></li>
+          <li><span class="k">space.loose</span><span class="v">16</span><span class="bar" style="width:16px"></span></li>
+          <li><span class="k">space.section</span><span class="v">24</span><span class="bar" style="width:24px"></span></li>
+          <li><span class="k">space.panel</span><span class="v">32</span><span class="bar" style="width:32px"></span></li>
+          <li><span class="k">space.deck</span><span class="v">48</span><span class="bar" style="width:48px"></span></li>
+        </ul>
+      </div>
+      <div>
+        <div class="grp"><h3>Radius &amp; border</h3></div>
+        <ul class="scale">
+          <li><span class="k">radius.none</span><span class="v">0</span><span class="radbox" style="border-radius:0"></span></li>
+          <li><span class="k">radius.control</span><span class="v">2</span><span class="radbox" style="border-radius:2px"></span></li>
+          <li><span class="k">radius.panel</span><span class="v">3</span><span class="radbox" style="border-radius:3px"></span></li>
+          <li><span class="k">radius.chassis</span><span class="v">5</span><span class="radbox" style="border-radius:5px"></span></li>
+          <li><span class="k">border.hairline</span><span class="v">1</span><span class="radbox" style="border-width:1px;border-radius:2px"></span></li>
+          <li><span class="k">border.bezel</span><span class="v">2</span><span class="radbox" style="border-width:2px;border-radius:2px"></span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="h2row col"><span class="h2num">05</span><h2>Depth</h2></div>
+    <p class="lede col">Four shadow tokens, all built from a hard top highlight and a bottom shadow. No ambient glows, no coloured shadows — a button reads as pressed because the bevel inverts, not because it changed tint.</p>
+
+    <div class="decks">
+      <div class="deck light" style="padding:20px">
+        <p class="deck-name"><span>Depth / Light</span></p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><div class="lbl" style="margin-bottom:6px">shadow.raised</div><div class="btn">Stop</div></div>
+          <div><div class="lbl" style="margin-bottom:6px">shadow.pressed</div><div class="btn is-pressed">Rec</div></div>
+          <div><div class="lbl" style="margin-bottom:6px">shadow.recessed</div><div class="well" style="height:34px"></div></div>
+          <div><div class="lbl" style="margin-bottom:6px">shadow.panel</div><div class="faceplate" style="height:34px;padding:0"></div></div>
+        </div>
+      </div>
+      <div class="deck dark" style="padding:20px">
+        <p class="deck-name"><span>Depth / Dark</span></p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><div class="lbl" style="margin-bottom:6px">shadow.raised</div><div class="btn">Stop</div></div>
+          <div><div class="lbl" style="margin-bottom:6px">shadow.pressed</div><div class="btn is-pressed">Rec</div></div>
+          <div><div class="lbl" style="margin-bottom:6px">shadow.recessed</div><div class="well" style="height:34px"></div></div>
+          <div><div class="lbl" style="margin-bottom:6px">shadow.panel</div><div class="faceplate" style="height:34px;padding:0"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="h2row col"><span class="h2num">06</span><h2>Motion</h2></div>
+    <p class="lede col">Mechanical, not decorative. A key travels and stops; it does not ease elegantly into place.</p>
+    <div class="spec col">
+      <div><span class="k">motion.keyTravel</span><span>60&nbsp;ms — button press and release</span></div>
+      <div><span class="k">motion.state</span><span>120&nbsp;ms — panel and status changes</span></div>
+      <div><span class="k">motion.needleRise</span><span>300&nbsp;ms — VU standard integration time</span></div>
+      <div><span class="k">motion.needleFall</span><span>300&nbsp;ms — symmetric, per the same standard</span></div>
+      <div><span class="k">motion.peakHold</span><span>1200&nbsp;ms — then the peak marker drops</span></div>
+      <div><span class="k">motion.ease</span><span><code>cubic-bezier(0.2, 0, 0, 1)</code></span></div>
+    </div>
+    <div class="note col">
+      <p><b>Reduced motion</b></p>
+      <p>Under <code>prefers-reduced-motion</code> the needle stops animating and reads instantaneous level as a static position; the peak marker still updates. Level information is never conveyed by motion alone.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Murmur Design Tokens v1 — 1980s field recorder. Tokens map one-to-one onto a Swift <code>Tokens</code> enum; every view reads from it and no component declares a literal value. Archivo and Azeret Mono ship inside the app bundle.</p>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var TICKS = [
+    { v: 0.00, l: "-20", x1: 68.7, y1: 60.6, x2: 61.1, y2: 54.1, lx: 77.9, ly: 68.3, r: 0 },
+    { v: 0.25, l: "-10", x1: 96.2, y1: 39.5, x2: 91.9, y2: 30.4, lx: 101.3, ly: 50.4, r: 0 },
+    { v: 0.37, l: "-7",  x1: 112.0, y1: 34.1, x2: 109.7, y2: 24.3, lx: 114.7, ly: 45.8, r: 0 },
+    { v: 0.46, l: "-5",  x1: 124.4, y1: 32.2, x2: 123.7, y2: 22.2, lx: 125.3, ly: 44.2, r: 0 },
+    { v: 0.56, l: "-3",  x1: 138.4, y1: 32.4, x2: 139.4, y2: 22.5, lx: 137.1, ly: 44.4, r: 0 },
+    { v: 0.66, l: "-1",  x1: 152.0, y1: 35.1, x2: 154.8, y2: 25.5, lx: 148.7, ly: 46.6, r: 0 },
+    { v: 0.72, l: "0",   x1: 160.0, y1: 37.8, x2: 163.7, y2: 28.6, lx: 155.5, ly: 49.0, r: 1 },
+    { v: 0.80, l: "+1",  x1: 170.0, y1: 42.7, x2: 175.0, y2: 34.1, lx: 164.0, ly: 53.1, r: 1 },
+    { v: 1.00, l: "+3",  x1: 191.3, y1: 60.6, x2: 198.9, y2: 54.1, lx: 182.1, ly: 68.3, r: 1 }
+  ];
+  var NS = "http://www.w3.org/2000/svg";
+
+  function buildFace(g) {
+    if (!g) return;
+    TICKS.forEach(function (t) {
+      var ln = document.createElementNS(NS, "line");
+      ln.setAttribute("class", t.r ? "vu-tick-red" : "vu-tick");
+      ln.setAttribute("x1", t.x1); ln.setAttribute("y1", t.y1);
+      ln.setAttribute("x2", t.x2); ln.setAttribute("y2", t.y2);
+      g.appendChild(ln);
+      var tx = document.createElementNS(NS, "text");
+      tx.setAttribute("class", t.r ? "vu-num vu-num-red" : "vu-num");
+      tx.setAttribute("x", t.lx); tx.setAttribute("y", t.ly);
+      tx.setAttribute("text-anchor", "middle");
+      tx.textContent = t.l;
+      g.appendChild(tx);
+    });
+  }
+
+  document.querySelectorAll(".ticks-l, .ticks-d").forEach(buildFace);
+
+  var needles = document.querySelectorAll(".needle-l, .needle-d");
+  var peaks = document.querySelectorAll(".peak-l, .peak-d");
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  function angle(v) { return -50 + 100 * Math.max(0, Math.min(1, v)); }
+
+  function setAll(nodes, v) {
+    var a = angle(v);
+    nodes.forEach(function (n) { n.setAttribute("transform", "rotate(" + a.toFixed(2) + " 130 112)"); });
+  }
+
+  if (reduce.matches) {
+    setAll(needles, 0.62); setAll(peaks, 0.74);
+    return;
+  }
+
+  // 300ms to 99% of a step  ->  tau = 300 / ln(100)
+  var TAU = 300 / Math.log(100);
+  var level = 0.15, shown = 0.15, peak = 0.15, peakAt = 0, t0 = performance.now(), last = t0;
+
+  function frame(now) {
+    var dt = Math.min(64, now - last); last = now;
+    var t = (now - t0) / 1000;
+
+    // Stand-in for speech: syllable-rate envelope with pauses and variation.
+    var syl = 0.5 + 0.5 * Math.sin(t * 8.4);
+    var phrase = Math.sin(t * 0.55) > -0.35 ? 1 : 0.06;
+    var drift = 0.5 + 0.5 * Math.sin(t * 1.9 + 1.1);
+    level = 0.14 + 0.78 * phrase * Math.pow(syl, 1.7) * (0.55 + 0.45 * drift);
+
+    var k = 1 - Math.exp(-dt / TAU);
+    shown += (level - shown) * k;
+
+    if (shown >= peak) { peak = shown; peakAt = now; }
+    else if (now - peakAt > 1200) { peak += (shown - peak) * (1 - Math.exp(-dt / 260)); }
+
+    setAll(needles, shown);
+    setAll(peaks, peak);
+    requestAnimationFrame(frame);
+  }
+  setAll(needles, shown); setAll(peaks, peak);
+  requestAnimationFrame(frame);
+})();
+</script>

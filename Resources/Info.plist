@@ -21,9 +21,9 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>26.0</string>
 
-	<!-- Menu bar only: no Dock icon, no main window. -->
-	<key>LSUIElement</key>
-	<true/>
+	<!-- Bundled so the deck's silkscreen labels never fall back to Helvetica. -->
+	<key>ATSApplicationFontsPath</key>
+	<string>Fonts</string>
 
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2026 Alex Choo. All rights reserved.</string>

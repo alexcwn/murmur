@@ -24,6 +24,12 @@ cp "$BUILD_DIR/$APP_NAME" "$APP/Contents/MacOS/$APP_NAME"
 cp "$ROOT/Resources/Info.plist" "$APP/Contents/Info.plist"
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 
+# Bundled faces — ATSApplicationFontsPath points at Contents/Resources/Fonts.
+if [ -d "$ROOT/Resources/Fonts" ]; then
+	mkdir -p "$APP/Contents/Resources/Fonts"
+	cp "$ROOT/Resources/Fonts/"*.ttf "$APP/Contents/Resources/Fonts/"
+fi
+
 if [ -f "$ROOT/Resources/AppIcon.icns" ]; then
 	cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 	/usr/libexec/PlistBuddy -c "Add :CFBundleIconFile string AppIcon" "$APP/Contents/Info.plist" 2>/dev/null || true

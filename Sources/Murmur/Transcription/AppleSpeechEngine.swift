@@ -14,6 +14,11 @@ final class AppleSpeechEngine: TranscriptionEngine {
     private var cachedFormat: AVAudioFormat?
     private let locale: Locale
 
+    /// Dictionary terms handed to the recogniser as context so it leans toward
+    /// producing them. Deliberately capped by the caller — long context lists
+    /// make these models drift and invent text on quiet audio.
+    var biasStrings: [String] = []
+
     init(locale: Locale = .current) {
         self.locale = locale
     }
@@ -55,6 +60,12 @@ final class AppleSpeechEngine: TranscriptionEngine {
         self.transcriber = transcriber
         self.analyzer = analyzer
         self.continuation = continuation
+
+        if !biasStrings.isEmpty {
+            let context = AnalysisContext()
+            context.contextualStrings = [.general: biasStrings]
+            try await analyzer.setContext(context)
+        }
 
         try await analyzer.prepareToAnalyze(in: cachedFormat)
         try await analyzer.start(inputSequence: stream)

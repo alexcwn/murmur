@@ -16,5 +16,8 @@ let package = Package(
                 .defaultIsolation(MainActor.self),
             ]
         )
+        // NOTE: the XCTest suite in Tests/MurmurTests covers CorrectionEngine but
+        // cannot be wired up yet - XCTest ships with Xcode, not Command Line
+        // Tools. Re-add a .testTarget here once Xcode is installed.
     ]
 )

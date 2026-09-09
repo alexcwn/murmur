@@ -1,7 +1,7 @@
 import AppKit
 import CoreGraphics
 
-enum Hotkey: String, CaseIterable, Identifiable, Sendable {
+enum Hotkey: String, CaseIterable, Identifiable, Codable, Sendable {
     case fn
     case rightOption
     case rightCommand
@@ -10,9 +10,9 @@ enum Hotkey: String, CaseIterable, Identifiable, Sendable {
 
     var label: String {
         switch self {
-        case .fn: "Fn / 🌐"
-        case .rightOption: "Right ⌥"
-        case .rightCommand: "Right ⌘"
+        case .fn: "Fn (globe)"
+        case .rightOption: "Right Option"
+        case .rightCommand: "Right Command"
         }
     }
 

@@ -3,10 +3,12 @@ import Foundation
 import Observation
 import OSLog
 
-/// Owns the push-to-talk pipeline and the state machine every other component reads.
+/// Owns the push-to-talk pipeline and the state machine every view reads.
 ///
-///     Fn down ──> capture ──> stream to engine ──> (Fn up) ──> finalize
-///                                                      ──> format ──> inject
+///     key down ──> capture ──> stream to engine ──> (key up) ──> finalize
+///                                                        ──> clean up
+///                                                        ──> apply dictionary
+///                                                        ──> insert + record
 @Observable
 final class DictationController {
     enum State: Equatable {
@@ -40,44 +42,61 @@ final class DictationController {
         }
     }
 
-    private(set) var state: State = .starting
-    private(set) var liveTranscript = ""
-    private(set) var lastInsertion = ""
-
-    var hotkey: Hotkey {
-        didSet { monitor.hotkey = hotkey }
+    /// How the current capture was started. Determines where the text goes.
+    enum CaptureMode {
+        /// Hotkey held while another app was focused — text is injected there.
+        case hotkey
+        /// Started from the window's transport. Murmur itself is frontmost, so
+        /// there is nothing sensible to inject into; the text is kept instead.
+        case manual
     }
 
-    /// Skip the LLM cleanup pass and inject the raw transcript. Useful when
-    /// dictating code or identifiers, where "cleanup" is mostly damage.
-    var rawMode = false
+    private(set) var state: State = .starting
+    private(set) var liveTranscript = ""
+    private(set) var captureMode: CaptureMode = .hotkey
+    /// 0…1, driven by the audio tap. Read by the VU meter.
+    private(set) var inputLevel: Float = 0
+    private(set) var captureStarted: Date?
+
+    var rawMode: Bool {
+        get { settings.values.rawMode }
+        set { settings.values.rawMode = newValue }
+    }
+
+    var hotkey: Hotkey {
+        get { settings.values.hotkey }
+        set { settings.values.hotkey = newValue; monitor.hotkey = newValue }
+    }
 
     let permissions = PermissionsManager()
+    let history: HistoryStore
+    let dictionaryStore: DictionaryStore
+    let settings: SettingsStore
 
     private let log = Logger(subsystem: "com.alexchoo.murmur", category: "pipeline")
     private let monitor = HotkeyMonitor()
     private let audio = AudioCapture()
     private let injector = TextInjector()
     private let hud = HUDController()
-    private var engine: any TranscriptionEngine = AppleSpeechEngine()
+    private var engine: any TranscriptionEngine
     private var formatter: any TextFormatter = FoundationModelsFormatter()
 
-    /// The app the user was focused on when they pressed the key. Captured on
-    /// key-down because our own HUD must never become frontmost, but a Space
-    /// switch mid-dictation would otherwise send text to the wrong window.
     private var targetContext = AppContext.unknown
     private var sessionTask: Task<Void, Never>?
-
-    /// How long the microphone stays warm after a dictation. Long enough that a
-    /// burst of dictations all feel instant, short enough that the orange
-    /// "mic in use" indicator isn't lit while you're not using the app.
-    private static let idleTimeout: Duration = .seconds(30)
     private var idleSuspendTask: Task<Void, Never>?
 
-    init(hotkey: Hotkey = .fn) {
-        self.hotkey = hotkey
-        monitor.hotkey = hotkey
-        monitor.onPress = { [weak self] in self?.beginDictation() }
+    init(
+        history: HistoryStore = HistoryStore(),
+        dictionaryStore: DictionaryStore = DictionaryStore(),
+        settings: SettingsStore = SettingsStore()
+    ) {
+        self.history = history
+        self.dictionaryStore = dictionaryStore
+        self.settings = settings
+        self.engine = AppleSpeechEngine(locale: settings.locale)
+
+        monitor.hotkey = settings.values.hotkey
+        monitor.onPress = { [weak self] in self?.beginDictation(mode: .hotkey) }
         monitor.onRelease = { [weak self] in self?.endDictation() }
     }
 
@@ -85,15 +104,15 @@ final class DictationController {
 
     func bootstrap() async {
         await permissions.refresh()
+        EntryValidator.warmUp()
+
         guard permissions.allGranted else {
             state = .needsPermissions
             return
         }
 
         do {
-            // Pre-warming matters more than anything else for perceived latency.
-            // The speech model download and the audio device negotiation both
-            // cost hundreds of milliseconds; neither should land on a keypress.
+            refreshBias()
             try await engine.prepare()
             try audio.prewarm()
             await formatter.prepare()
@@ -117,17 +136,42 @@ final class DictationController {
         audio.teardown()
     }
 
-    // MARK: - Push to talk
+    /// Pushes the current dictionary at the recogniser. Cheap, so it runs on
+    /// every capture rather than trying to track dictionary edits.
+    private func refreshBias() {
+        engine.biasStrings = CorrectionEngine.biasStrings(from: dictionaryStore.dictionary)
+    }
 
-    private func beginDictation() {
+    // MARK: - Capture
+
+    /// Transport button in the main window.
+    func toggleManualCapture() {
+        switch state {
+        case .idle: beginDictation(mode: .manual)
+        case .listening: endDictation()
+        default: break
+        }
+    }
+
+    private func beginDictation(mode: CaptureMode) {
         guard state == .idle else { return }
 
         idleSuspendTask?.cancel()
         idleSuspendTask = nil
-        targetContext = AppContext.frontmost()
+        captureMode = mode
+        targetContext = mode == .hotkey ? AppContext.frontmost() : .unknown
         liveTranscript = ""
+        captureStarted = .now
         state = .listening
-        hud.show(state: .listening, transcript: "")
+        refreshBias()
+
+        audio.level.setSink { [weak self] value in
+            Task { @MainActor in self?.inputLevel = value }
+        }
+
+        // The floating HUD is for dictating into another app; in manual mode the
+        // window is already showing everything it would.
+        if mode == .hotkey { hud.show(state: .listening, transcript: "") }
 
         sessionTask = Task { [weak self] in
             guard let self else { return }
@@ -148,13 +192,16 @@ final class DictationController {
 
     private func endDictation() {
         guard state == .listening else { return }
+        let mode = captureMode
+        let started = captureStarted ?? .now
         state = .thinking
-        hud.show(state: .thinking, transcript: liveTranscript)
+        if mode == .hotkey { hud.show(state: .thinking, transcript: liveTranscript) }
         audio.endCapture()
+        audio.level.setSink(nil)
+        inputLevel = 0
 
         Task { [weak self] in
             guard let self else { return }
-            // Let the capture loop drain into the engine before finalizing.
             await self.sessionTask?.value
 
             do {
@@ -164,12 +211,26 @@ final class DictationController {
                     return
                 }
 
-                let text = self.rawMode
+                let cleaned = self.rawMode
                     ? raw
                     : await self.formatter.format(raw, context: self.targetContext)
 
-                self.injector.inject(text, into: self.targetContext)
-                self.lastInsertion = text
+                // The dictionary runs last, after the cleanup model, so nothing
+                // downstream can undo it. This is the guaranteed path.
+                let corrected = self.dictionaryStore.engine.apply(to: cleaned)
+
+                if mode == .hotkey {
+                    self.injector.inject(corrected.text, into: self.targetContext)
+                }
+
+                self.history.add(Transcription(
+                    raw: raw,
+                    text: corrected.text,
+                    appName: mode == .hotkey ? self.targetContext.appName : nil,
+                    duration: Date().timeIntervalSince(started),
+                    corrections: corrected.applied,
+                    wasInjected: mode == .hotkey
+                ))
                 self.finishIdle()
             } catch {
                 self.log.error("finalize failed: \(error.localizedDescription)")
@@ -180,22 +241,24 @@ final class DictationController {
 
     private func updateLiveTranscript(_ partial: String) {
         liveTranscript = partial
-        hud.show(state: .listening, transcript: partial)
+        if captureMode == .hotkey { hud.show(state: .listening, transcript: partial) }
     }
 
     private func finishIdle() {
         state = .idle
         liveTranscript = ""
+        captureStarted = nil
         hud.hide()
         scheduleIdleSuspend()
     }
 
-    /// Releases the microphone once you've stopped dictating for a while.
-    /// `beginCapture` transparently restarts the engine on the next keypress.
+    /// Releases the microphone once you've stopped dictating for a while, so the
+    /// system "mic in use" indicator isn't lit while the app merely sits open.
     private func scheduleIdleSuspend() {
         idleSuspendTask?.cancel()
+        let timeout = settings.values.idleTimeoutSeconds
         idleSuspendTask = Task { [weak self] in
-            try? await Task.sleep(for: Self.idleTimeout)
+            try? await Task.sleep(for: .seconds(timeout))
             guard !Task.isCancelled, let self, self.state == .idle else { return }
             self.audio.suspend()
         }
@@ -204,11 +267,11 @@ final class DictationController {
     private func fail(_ error: any Error) async {
         await engine.cancel()
         audio.endCapture()
+        audio.level.setSink(nil)
+        inputLevel = 0
         hud.hide()
         state = .failed(error.localizedDescription)
 
-        // Don't strand the app in a failed state — a transient device glitch
-        // shouldn't require a relaunch.
         try? await Task.sleep(for: .seconds(3))
         if case .failed = state { state = .idle }
     }

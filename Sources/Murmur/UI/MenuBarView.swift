@@ -1,8 +1,11 @@
 import AppKit
 import SwiftUI
 
+/// Secondary now: status and the hotkey while you're working in another app.
+/// The main window is the interface.
 struct MenuBarView: View {
     @Bindable var controller: DictationController
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         Text(controller.state.label)
@@ -21,26 +24,30 @@ struct MenuBarView: View {
 
         Divider()
 
-        Toggle("Raw mode (skip cleanup)", isOn: $controller.rawMode)
-
-        Picker("Push-to-talk key", selection: $controller.hotkey) {
-            ForEach(Hotkey.allCases) { key in
-                Text(key.label).tag(key)
-            }
+        Button(controller.state == .listening ? "Stop Recording" : "Start Recording") {
+            controller.toggleManualCapture()
         }
+        .disabled(controller.state != .idle && controller.state != .listening)
 
-        if !controller.lastInsertion.isEmpty {
-            Divider()
-            Button("Copy last dictation") {
+        Toggle("Raw mode", isOn: $controller.rawMode)
+
+        if let last = controller.history.entries.first {
+            Button("Copy Last Dictation") {
                 NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString(controller.lastInsertion, forType: .string)
+                NSPasteboard.general.setString(last.text, forType: .string)
             }
         }
 
         Divider()
 
+        Button("Open Murmur") {
+            NSApp.activate(ignoringOtherApps: true)
+            openWindow(id: MurmurApp.mainWindowID)
+        }
+
         SettingsLink { Text("Settings…") }
-            .keyboardShortcut(",", modifiers: .command)
+
+        Divider()
 
         Button("Quit Murmur") {
             controller.shutdown()

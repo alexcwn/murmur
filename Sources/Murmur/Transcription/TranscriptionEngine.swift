@@ -13,6 +13,10 @@ protocol TranscriptionEngine: AnyObject {
     /// Audio format the engine wants. `nil` means "whatever the mic gives you".
     var inputFormat: AVAudioFormat? { get async }
 
+    /// Words the engine should lean toward producing. Engines that cannot bias
+    /// may ignore this; the correction pass is the guaranteed path either way.
+    var biasStrings: [String] { get set }
+
     /// Download models, warm caches. Called once at launch, never on a keypress.
     func prepare() async throws
 
