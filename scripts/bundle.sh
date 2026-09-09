@@ -30,9 +30,11 @@ if [ -d "$ROOT/Resources/Fonts" ]; then
 	cp "$ROOT/Resources/Fonts/"*.ttf "$APP/Contents/Resources/Fonts/"
 fi
 
+# CFBundleIconFile is declared in Info.plist; regenerate with scripts/make-icon.swift
 if [ -f "$ROOT/Resources/AppIcon.icns" ]; then
 	cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
-	/usr/libexec/PlistBuddy -c "Add :CFBundleIconFile string AppIcon" "$APP/Contents/Info.plist" 2>/dev/null || true
+else
+	echo "  (no AppIcon.icns — run: swift scripts/make-icon.swift)"
 fi
 
 echo "▸ Signing as '$IDENTITY'…"

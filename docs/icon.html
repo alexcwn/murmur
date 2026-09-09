@@ -1,0 +1,248 @@
+<title>Murmur Icon Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Azeret+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #eceae5; --surface: #f8f7f4; --ink: #1d1c1a; --soft: #4a4842;
+    --mute: #7a776f; --rule: #d2cfc8; --rule-soft: #e3e0da; --accent: #b83228;
+    --ui: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: "Azeret Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17181a; --surface: #1f2124; --ink: #e4e2dc; --soft: #b0ada6;
+      --mute: #85827b; --rule: #32353a; --rule-soft: #26292d; --accent: #d9483c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17181a; --surface: #1f2124; --ink: #e4e2dc; --soft: #b0ada6;
+    --mute: #85827b; --rule: #32353a; --rule-soft: #26292d; --accent: #d9483c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--ui); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: clamp(2rem,5vw,3.5rem) clamp(1rem,4vw,2.25rem) 5rem; }
+  .col { max-width: 64ch; }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--mute); margin: 0 0 1rem; }
+  .eyebrow b { color: var(--accent); font-weight: 500; }
+  h1 { font-weight: 700; font-size: clamp(2rem,5vw,2.8rem); line-height: 1.04; letter-spacing: -.02em; margin: 0 0 .9rem; text-wrap: balance; }
+  .standfirst { font-size: 1.14rem; color: var(--soft); margin: 0 0 1.5rem; text-wrap: pretty; }
+  .standfirst strong { color: var(--ink); font-weight: 600; }
+  section { margin-top: clamp(2.6rem,6vw,3.6rem); }
+  h2 { font-weight: 700; font-size: 1.6rem; letter-spacing: -.012em; margin: 0 0 .4rem; }
+  .lede { color: var(--soft); margin: 0 0 1.4rem; }
+  p { margin: 0 0 1rem; text-wrap: pretty; }
+  code { font-family: var(--mono); font-size: .85em; background: var(--surface); border: 1px solid var(--rule-soft); padding: .05em .3em; }
+
+  .opt { border: 1px solid var(--rule); background: var(--surface); margin-bottom: 1.5rem; }
+  .opt.pick { border-color: var(--accent); border-width: 2px; }
+  .opt-head { display: flex; align-items: baseline; gap: .7rem; padding: .85rem 1.1rem; border-bottom: 1px solid var(--rule); flex-wrap: wrap; }
+  .opt-num { font-family: var(--mono); font-size: .82rem; font-weight: 500; color: var(--accent); }
+  .opt-name { font-weight: 700; font-size: 1.1rem; }
+  .opt-tag { font-family: var(--mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); margin-left: auto; }
+  .opt-body { display: grid; grid-template-columns: 200px 1fr; gap: 1.4rem; padding: 1.2rem; align-items: start; }
+  @media (max-width: 680px) { .opt-body { grid-template-columns: 1fr; } }
+  .hero svg { display: block; width: 200px; height: 200px; }
+  .opt-notes p { font-size: .93rem; margin: 0 0 .7rem; }
+  .opt-notes p:last-child { margin-bottom: 0; }
+  .verdict { font-family: var(--mono); font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; }
+  .good { color: #4f8f42; } .warn { color: #b8791a; }
+  .ladder { display: flex; align-items: flex-end; gap: 1.3rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--rule-soft); flex-wrap: wrap; }
+  .rung { text-align: center; }
+  .rung svg { display: block; margin: 0 auto .35rem; }
+  .rung span { font-family: var(--mono); font-size: .68rem; color: var(--mute); }
+  .note { border-left: 3px solid var(--accent); background: var(--surface); padding: .9rem 1.1rem; margin: 1.2rem 0; font-size: .92rem; }
+  .note p { margin: 0; } .note p + p { margin-top: .55rem; }
+  .note b { font-family: var(--mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: .3rem; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-family: var(--mono); font-size: .8rem; color: var(--mute); max-width: 64ch; }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="bezel" x1="0" y1="0" x2=".35" y2="1">
+      <stop offset="0" stop-color="#E6E2D9"/><stop offset=".45" stop-color="#B6B2A9"/>
+      <stop offset=".72" stop-color="#8E9296"/><stop offset="1" stop-color="#5E6266"/>
+    </linearGradient>
+    <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F4EEDF"/><stop offset="1" stop-color="#E2DAC6"/>
+    </linearGradient>
+    <linearGradient id="chassis" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#33363A"/><stop offset="1" stop-color="#191A1C"/>
+    </linearGradient>
+    <linearGradient id="keycap" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E4E0D7"/><stop offset=".5" stop-color="#C4C0B7"/>
+      <stop offset="1" stop-color="#9A968D"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx=".36" cy=".32" r=".78">
+      <stop offset="0" stop-color="#F2705F"/><stop offset=".45" stop-color="#D23F32"/>
+      <stop offset="1" stop-color="#8E2018"/>
+    </radialGradient>
+
+    <!-- 01 METER -->
+    <g id="mark-meter">
+      <rect x="60" y="60" width="904" height="904" rx="200" fill="url(#bezel)"/>
+      <rect x="132" y="132" width="760" height="760" rx="146" fill="url(#face)"/>
+      <path d="M152,790 A470,470 0 0 1 872,790" fill="none" stroke="#2A2825" stroke-width="16" stroke-linecap="round" transform="rotate(0 512 790)"/>
+      <path d="M690,404 A470,470 0 0 1 872,790" fill="none" stroke="#C0392B" stroke-width="30" stroke-linecap="round"/>
+      <g stroke="#2A2825" stroke-width="13" stroke-linecap="round">
+        <line x1="192" y1="700" x2="230" y2="672"/>
+        <line x1="272" y1="530" x2="318" y2="522"/>
+        <line x1="410" y1="404" x2="440" y2="440"/>
+        <line x1="574" y1="378" x2="588" y2="422"/>
+      </g>
+      <line x1="512" y1="790" x2="636" y2="410" stroke="#22201E" stroke-width="28" stroke-linecap="round"/>
+      <circle cx="512" cy="790" r="46" fill="#6E7276" stroke="#2A2825" stroke-width="10"/>
+      <circle cx="512" cy="790" r="16" fill="#C0392B"/>
+    </g>
+
+    <!-- 02 LAMP -->
+    <g id="mark-lamp">
+      <rect x="60" y="60" width="904" height="904" rx="200" fill="url(#bezel)"/>
+      <circle cx="512" cy="512" r="322" fill="#4A4E52"/>
+      <circle cx="512" cy="512" r="322" fill="none" stroke="#33363A" stroke-width="26"/>
+      <circle cx="512" cy="512" r="258" fill="url(#lamp)"/>
+      <ellipse cx="430" cy="424" rx="86" ry="58" fill="#FFFFFF" opacity=".26" transform="rotate(-28 430 424)"/>
+    </g>
+
+    <!-- 03 KEY -->
+    <g id="mark-key">
+      <rect x="60" y="60" width="904" height="904" rx="200" fill="url(#chassis)"/>
+      <rect x="212" y="252" width="600" height="520" rx="26" fill="#0E0F10"/>
+      <rect x="212" y="236" width="600" height="520" rx="26" fill="url(#keycap)"/>
+      <rect x="212" y="236" width="600" height="520" rx="26" fill="none" stroke="#EFEBE2" stroke-width="9"/>
+      <rect x="266" y="290" width="492" height="412" rx="16" fill="none" stroke="#8B877E" stroke-width="7" opacity=".65"/>
+      <circle cx="512" cy="470" r="86" fill="url(#lamp)"/>
+      <ellipse cx="484" cy="440" rx="30" ry="20" fill="#FFFFFF" opacity=".3" transform="rotate(-28 484 440)"/>
+    </g>
+
+    <!-- 04 GRILLE -->
+    <g id="mark-grille">
+      <rect x="60" y="60" width="904" height="904" rx="200" fill="url(#chassis)"/>
+      <g fill="#8E9296">
+        <circle cx="290" cy="290" r="52"/><circle cx="512" cy="290" r="52"/><circle cx="734" cy="290" r="52"/>
+        <circle cx="290" cy="512" r="52"/>                                   <circle cx="734" cy="512" r="52"/>
+        <circle cx="290" cy="734" r="52"/><circle cx="512" cy="734" r="52"/><circle cx="734" cy="734" r="52"/>
+      </g>
+      <circle cx="512" cy="512" r="76" fill="url(#lamp)"/>
+      <ellipse cx="486" cy="486" rx="26" ry="17" fill="#FFFFFF" opacity=".28" transform="rotate(-28 486 486)"/>
+    </g>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <header class="col">
+    <p class="eyebrow">Murmur &nbsp;/&nbsp; <b>Icon Study</b></p>
+    <h1>Make it an instrument</h1>
+    <p class="standfirst">Four marks taken from inside the app rather than illustrating what it does. <strong>Murmur already has a face</strong> — brushed bezels, a cream meter, one red lamp — and an icon drawn from that will sit with the app instead of announcing it.</p>
+    <p>Every one is a real object, not a symbol of one. Same size ladder as before, because the Dock is where this gets decided.</p>
+  </header>
+
+  <section>
+    <!-- 01 -->
+    <div class="opt pick">
+      <div class="opt-head">
+        <span class="opt-num">01</span><span class="opt-name">Meter</span>
+        <span class="opt-tag">Recommended</span>
+      </div>
+      <div class="opt-body">
+        <div class="hero"><svg viewBox="0 0 1024 1024" role="img" aria-label="A VU meter: cream face in a brushed aluminium bezel, black needle deflected right, red zone arc at the top right"><use href="#mark-meter"/></svg></div>
+        <div class="opt-notes">
+          <p>A VU meter, cream face in a machined bezel, needle deflected into the useful part of the scale with the red zone above it. Ivory-and-red is the most recognisable instrument face there is — you read it as a meter before you read it as an icon.</p>
+          <p>It is the app's own signature element, already on screen every time you record. And the pale cream face is genuinely unusual in a Dock full of saturated gradients, so it stands out by being quiet.</p>
+          <p>At 32 the needle survives because it is a thick diagonal, not a hairline. At 16 you get cream, a dark stroke and a red hint — still legible as <em>a dial</em>.</p>
+          <p><span class="verdict good">Verdict — distinctive, honest, and holds its shape</span></p>
+          <div class="ladder">
+            <div class="rung"><svg width="128" height="128" viewBox="0 0 1024 1024"><use href="#mark-meter"/></svg><span>128</span></div>
+            <div class="rung"><svg width="64" height="64" viewBox="0 0 1024 1024"><use href="#mark-meter"/></svg><span>64</span></div>
+            <div class="rung"><svg width="32" height="32" viewBox="0 0 1024 1024"><use href="#mark-meter"/></svg><span>32</span></div>
+            <div class="rung"><svg width="16" height="16" viewBox="0 0 1024 1024"><use href="#mark-meter"/></svg><span>16</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 -->
+    <div class="opt">
+      <div class="opt-head">
+        <span class="opt-num">02</span><span class="opt-name">Lamp</span>
+        <span class="opt-tag">Maximum restraint</span>
+      </div>
+      <div class="opt-body">
+        <div class="hero"><svg viewBox="0 0 1024 1024" role="img" aria-label="A single large red indicator lamp seated in a dark bezel on a brushed aluminium plate"><use href="#mark-lamp"/></svg></div>
+        <div class="opt-notes">
+          <p>One record lamp, seated in a bezel on an aluminium plate. The whole idea of the app reduced to its single accent colour: this thing is listening.</p>
+          <p>Unbeatable at small sizes — a circle inside a square never breaks. It is also the most Braun answer available, and it matches the lamp already lit in the transport deck.</p>
+          <p>The risk is category collision. A red circle is what a great many recording apps reach for, so it leans on the bezel and the brushed plate to say which one this is — detail that mostly disappears by 32.</p>
+          <p><span class="verdict warn">Verdict — flawless craft, least ownable</span></p>
+          <div class="ladder">
+            <div class="rung"><svg width="128" height="128" viewBox="0 0 1024 1024"><use href="#mark-lamp"/></svg><span>128</span></div>
+            <div class="rung"><svg width="64" height="64" viewBox="0 0 1024 1024"><use href="#mark-lamp"/></svg><span>64</span></div>
+            <div class="rung"><svg width="32" height="32" viewBox="0 0 1024 1024"><use href="#mark-lamp"/></svg><span>32</span></div>
+            <div class="rung"><svg width="16" height="16" viewBox="0 0 1024 1024"><use href="#mark-lamp"/></svg><span>16</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 -->
+    <div class="opt">
+      <div class="opt-head">
+        <span class="opt-num">03</span><span class="opt-name">Key</span>
+        <span class="opt-tag">The gesture</span>
+      </div>
+      <div class="opt-body">
+        <div class="hero"><svg viewBox="0 0 1024 1024" role="img" aria-label="A single chamfered aluminium transport key on a dark chassis, with a red lamp inset in its face"><use href="#mark-key"/></svg></div>
+        <div class="opt-notes">
+          <p>The thing you actually do: one key, held. A chamfered aluminium cap on a dark chassis, lit lamp inset in the face, seated slightly proud of its well.</p>
+          <p>This is the only direction that depicts the interaction rather than the machine, which is a real argument for it — the app is a key you hold, not a meter you watch.</p>
+          <p>It is also the busiest. Two rectangles inside a rectangle is a weak silhouette, and by 32 the chamfer that makes it a physical key has flattened into a grey slab.</p>
+          <p><span class="verdict warn">Verdict — best concept, weakest silhouette</span></p>
+          <div class="ladder">
+            <div class="rung"><svg width="128" height="128" viewBox="0 0 1024 1024"><use href="#mark-key"/></svg><span>128</span></div>
+            <div class="rung"><svg width="64" height="64" viewBox="0 0 1024 1024"><use href="#mark-key"/></svg><span>64</span></div>
+            <div class="rung"><svg width="32" height="32" viewBox="0 0 1024 1024"><use href="#mark-key"/></svg><span>32</span></div>
+            <div class="rung"><svg width="16" height="16" viewBox="0 0 1024 1024"><use href="#mark-key"/></svg><span>16</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 -->
+    <div class="opt">
+      <div class="opt-head">
+        <span class="opt-num">04</span><span class="opt-name">Grille</span>
+        <span class="opt-tag">Most unusual</span>
+      </div>
+      <div class="opt-body">
+        <div class="hero"><svg viewBox="0 0 1024 1024" role="img" aria-label="A microphone grille of eight aluminium perforations around a single lit red centre"><use href="#mark-grille"/></svg></div>
+        <div class="opt-notes">
+          <p>A microphone grille with one perforation lit. Eight dull aluminium holes and a red centre — the one that is listening.</p>
+          <p>The most distinctive of the four. Nothing else in a Dock is a perforated plate, and the single lit hole carries the idea without a literal microphone anywhere in it.</p>
+          <p>Also the most fragile. It depends on you resolving nine separate elements, so it is really a large-size mark; by 32 the perforations merge and by 16 it is a red dot in grey fog.</p>
+          <p><span class="verdict warn">Verdict — strongest at 512, weakest at 32</span></p>
+          <div class="ladder">
+            <div class="rung"><svg width="128" height="128" viewBox="0 0 1024 1024"><use href="#mark-grille"/></svg><span>128</span></div>
+            <div class="rung"><svg width="64" height="64" viewBox="0 0 1024 1024"><use href="#mark-grille"/></svg><span>64</span></div>
+            <div class="rung"><svg width="32" height="32" viewBox="0 0 1024 1024"><use href="#mark-grille"/></svg><span>32</span></div>
+            <div class="rung"><svg width="16" height="16" viewBox="0 0 1024 1024"><use href="#mark-grille"/></svg><span>16</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="col">
+    <h2>My pick: 01, the Meter</h2>
+    <p>It is the only one that is <em>this</em> app rather than any recording app. The lamp is more perfectly crafted and the grille is more unusual, but a red dot could belong to anything, and the grille stops working at exactly the size the Dock uses most.</p>
+    <p>The meter earns its place three ways: it is already the app's most memorable element, ivory-and-red reads as an instrument instantly, and a pale cream icon is genuinely rare among Dock icons — it stands out by being the quiet one.</p>
+    <div class="note">
+      <p><b>If you want the idea and not the machine</b></p>
+      <p>03 is the one I would argue for against myself. Murmur is a key you hold, not a meter you watch, and no other icon on the shelf depicts its own gesture. It needs redrawing at a steeper angle with a heavier chamfer to fix the silhouette — say the word and I will.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Murmur Icon Study. Bezel <code>#E6E2D9</code>–<code>#5E6266</code>, meter face <code>#F4EEDF</code>, chassis <code>#33363A</code>–<code>#191A1C</code>, record red <code>#D23F32</code>. Small sizes get a simplified redraw before the .icns is cut.</p>
+  </footer>
+</div>
