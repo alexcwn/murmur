@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push makes an in-flight run irrelevant.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & test
+    # macOS 26 is required, not preferred: SpeechAnalyzer and FoundationModels
+    # only exist in the 26 SDK, and the package sets a macOS 26 minimum.
+    runs-on: macos-26
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: |
+          sw_vers
+          swift --version
+          xcodebuild -version
+
+      - name: Build
+        run: swift build
+
+      # These cover CorrectionEngine — the dictionary matching rules that must
+      # catch "CloudCode" while never touching "Cloudflare". They cannot run on
+      # a machine with only Command Line Tools, because XCTest ships with Xcode,
+      # so CI is the only place they actually execute.
+      - name: Test
+        run: swift test
+
+      - name: Release build
+        run: swift build -c release

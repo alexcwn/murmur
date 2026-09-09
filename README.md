@@ -174,6 +174,7 @@ make clean
 - Launch at login
 - Notarized distribution
 
-`Tests/MurmurTests` covers the correction engine but is not wired into
-`Package.swift`: XCTest ships with Xcode, not Command Line Tools. Add a
-`.testTarget` once Xcode is installed.
+`Tests/MurmurTests` covers the correction engine. `swift test` needs XCTest,
+which ships with Xcode rather than Command Line Tools, so it does not run on a
+CLT-only machine — CI runs it on every push instead (`macos-26` runners have
+Xcode preinstalled). Plain `swift build` is unaffected either way.
