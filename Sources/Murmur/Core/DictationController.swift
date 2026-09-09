@@ -57,6 +57,8 @@ final class DictationController {
     /// 0…1, driven by the audio tap. Read by the VU meter.
     private(set) var inputLevel: Float = 0
     private(set) var captureStarted: Date?
+    /// Nil when the cleanup pass is working; otherwise why it is not.
+    private(set) var cleanupUnavailable: String?
 
     var rawMode: Bool {
         get { settings.values.rawMode }
@@ -116,6 +118,7 @@ final class DictationController {
             try await engine.prepare()
             try audio.prewarm()
             await formatter.prepare()
+            cleanupUnavailable = formatter.unavailableReason
         } catch {
             log.error("bootstrap failed: \(error.localizedDescription)")
             state = .failed(error.localizedDescription)

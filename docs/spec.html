@@ -318,6 +318,7 @@
       <li class="req"><span class="rid">FM-3</span><div>
         <p>Transcript content <span class="kw">MUST</span> be treated as data, never as instructions to the model.</p>
         <p class="why">Users dictate questions and commands constantly. Without an explicit guard the model answers them instead of transcribing them.</p>
+        <p class="why">Instructions alone are not sufficient, and this is the single most expensive lesson in the reference implementation. Passing the transcript as the prompt makes it a message addressed to the model, and that structural signal beats any amount of "never answer" in the system instructions — dictating "yeah" came back as "Sure, I can help with that." The transcript <span class="kw">MUST</span> be delivered as delimited data inside a task-shaped prompt, and the system <span class="kw">SHOULD</span> additionally verify that the output retains most of the speaker's words, rejecting it in favour of the raw transcript when it does not.</p>
       </div></li>
       <li class="req"><span class="rid">FM-4</span><div>
         <p>The system <span class="kw">SHOULD</span> pass the destination application's identity to the model so register can adapt.</p>

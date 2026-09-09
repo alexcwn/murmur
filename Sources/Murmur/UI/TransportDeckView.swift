@@ -56,6 +56,28 @@ struct TransportDeckView: View {
                     .help("Skip the cleanup pass — useful for code and identifiers.")
                 }
 
+                if let reason = controller.cleanupUnavailable {
+                    Well(padding: Tokens.Space.snug) {
+                        HStack(alignment: .top, spacing: Tokens.Space.snug) {
+                            Rectangle().fill(Tokens.Signal.levelWarn).frame(width: 3)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Silkscreen(text: "Cleanup off", size: .micro,
+                                           color: Tokens.Signal.levelWarn)
+                                Text(reason)
+                                    .font(Tokens.Typography.bodySmall)
+                                    .foregroundStyle(Tokens.Text.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            Spacer(minLength: 0)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                } else if controller.rawMode {
+                    Silkscreen(text: "Raw mode — cleanup skipped", size: .micro,
+                               color: Tokens.Signal.levelWarn)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
                 if isRecording && !controller.liveTranscript.isEmpty {
                     Well {
                         Text(controller.liveTranscript)

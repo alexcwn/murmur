@@ -119,6 +119,30 @@ struct SettingsView: View {
                     .frame(width: 230)
                 }
 
+                if let reason = controller.cleanupUnavailable {
+                    Well(padding: Tokens.Space.snug) {
+                        HStack(alignment: .top, spacing: Tokens.Space.snug) {
+                            Rectangle().fill(Tokens.Signal.levelWarn).frame(width: 3)
+                            VStack(alignment: .leading, spacing: Tokens.Space.tight) {
+                                Silkscreen(text: "Cleanup unavailable", size: .micro,
+                                           color: Tokens.Signal.levelWarn)
+                                Text(reason)
+                                    .font(Tokens.Typography.bodySmall)
+                                    .foregroundStyle(Tokens.Text.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Button("Open Apple Intelligence settings…") {
+                                    if let u = URL(string: "x-apple.systempreferences:com.apple.preferences.intelligence") {
+                                        NSWorkspace.shared.open(u)
+                                    }
+                                }
+                                .font(Tokens.Typography.bodySmall)
+                            }
+                            Spacer(minLength: 0)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+
                 Text("Recognition and cleanup both run on this device. Changing the language takes effect on the next launch, and may download a model.")
                     .font(Tokens.Typography.bodySmall)
                     .foregroundStyle(Tokens.Text.secondary)
