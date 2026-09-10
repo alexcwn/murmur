@@ -96,13 +96,19 @@ struct SettingsView: View {
                 HStack {
                     Silkscreen(text: "Engine", size: .micro)
                     Spacer()
-                    Picker("", selection: .constant(0)) {
-                        Text("Apple Speech (on-device)").tag(0)
+                    Picker("", selection: $controller.engineChoice) {
+                        ForEach(EngineChoice.allCases) { choice in
+                            Text(choice.label).tag(choice)
+                        }
                     }
                     .labelsHidden()
                     .frame(width: 230)
-                    .disabled(true)
                 }
+
+                Text(controller.engineChoice.detail)
+                    .font(Tokens.Typography.bodySmall)
+                    .foregroundStyle(Tokens.Text.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 HStack {
                     Silkscreen(text: "Language", size: .micro)

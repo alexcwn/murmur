@@ -95,11 +95,46 @@ final class DictationController {
         self.history = history
         self.dictionaryStore = dictionaryStore
         self.settings = settings
-        self.engine = AppleSpeechEngine(locale: settings.locale)
+        self.engine = Self.makeEngine(settings.values.engine, locale: settings.locale)
 
         monitor.hotkey = settings.values.hotkey
         monitor.onPress = { [weak self] in self?.beginDictation(mode: .hotkey) }
         monitor.onRelease = { [weak self] in self?.endDictation() }
+    }
+
+    /// Which recogniser is driving transcription. Changing it rebuilds the
+    /// engine in place, so the choice can be A/B'd without relaunching.
+    var engineChoice: EngineChoice {
+        get { settings.values.engine }
+        set {
+            guard newValue != settings.values.engine else { return }
+            settings.values.engine = newValue
+            Task { await switchEngine(to: newValue) }
+        }
+    }
+
+    private static func makeEngine(_ choice: EngineChoice, locale: Locale) -> any TranscriptionEngine {
+        switch choice {
+        case .speech: AppleSpeechEngine(locale: locale)
+        case .dictation: AppleDictationEngine(locale: locale)
+        }
+    }
+
+    /// Only swaps when nothing is in flight; a mid-utterance change would
+    /// strand the audio stream in the outgoing engine.
+    private func switchEngine(to choice: EngineChoice) async {
+        guard state == .idle || state == .needsPermissions || state == .starting else { return }
+        let previous = engine
+        let next = Self.makeEngine(choice, locale: settings.locale)
+        next.biasStrings = CorrectionEngine.biasStrings(from: dictionaryStore.dictionary)
+        do {
+            try await next.prepare()
+            await previous.cancel()
+            engine = next
+        } catch {
+            log.error("could not switch engine: \(error.localizedDescription)")
+            state = .failed(error.localizedDescription)
+        }
     }
 
     // MARK: - Lifecycle

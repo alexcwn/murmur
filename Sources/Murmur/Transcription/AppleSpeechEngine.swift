@@ -28,24 +28,11 @@ final class AppleSpeechEngine: TranscriptionEngine {
     }
 
     func prepare() async throws {
+        // First launch pays a one-time model download. Doing it here rather
+        // than lazily is why the first dictation isn't several seconds slow.
         let probe = makeTranscriber()
-
-        switch await AssetInventory.status(forModules: [probe]) {
-        case .unsupported:
-            throw EngineError.localeUnsupported(locale.identifier)
-        case .installed:
-            break
-        case .supported, .downloading:
-            // First launch pays a one-time model download. Doing it here rather
-            // than lazily is why the first dictation isn't several seconds slow.
-            if let request = try await AssetInventory.assetInstallationRequest(supporting: [probe]) {
-                try await request.downloadAndInstall()
-            }
-        @unknown default:
-            break
-        }
-
-        cachedFormat = await SpeechAnalyzer.bestAvailableAudioFormat(compatibleWith: [probe])
+        try await SpeechAssets.ensureInstalled(for: [probe], locale: locale)
+        cachedFormat = await SpeechAssets.bestFormat(for: [probe])
     }
 
     func beginSession(onPartial: @escaping @Sendable (String) -> Void) async throws {
@@ -126,14 +113,4 @@ final class AppleSpeechEngine: TranscriptionEngine {
         SpeechTranscriber(locale: locale, preset: .progressiveTranscription)
     }
 
-    enum EngineError: LocalizedError {
-        case localeUnsupported(String)
-
-        var errorDescription: String? {
-            switch self {
-            case .localeUnsupported(let id):
-                "On-device speech isn't available for \(id)."
-            }
-        }
-    }
 }

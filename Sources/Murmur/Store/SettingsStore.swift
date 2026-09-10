@@ -8,6 +8,7 @@ final class SettingsStore {
     struct Values: Codable, Equatable, Sendable {
         var hotkey: Hotkey = .fn
         var rawMode: Bool = false
+        var engine: EngineChoice = .speech
         var localeIdentifier: String = Locale.current.identifier
         var idleTimeoutSeconds: Double = 30
     }

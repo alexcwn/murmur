@@ -102,9 +102,14 @@ Fn up ─────────>│
 
 Two seams are deliberate:
 
-- **`TranscriptionEngine`** — swap in FluidAudio's Parakeet (Neural Engine,
-  ~1.9% WER, fastest on Apple Silicon) or WhisperKit for wider multilingual
-  coverage without touching the pipeline.
+- **`TranscriptionEngine`** — two Apple engines ship today, selectable in
+  Settings → Model and swapped live without a relaunch:
+  - **Prose** (`SpeechTranscriber`) — tuned for continuous speech, 30 locales.
+  - **Dictation** (`DictationTranscriber`) — what system Dictation uses. Resolves
+    spoken commands (“new line”, “period”, “comma”) inside the recogniser rather
+    than leaving them to the cleanup model, and covers 54 locales.
+
+  FluidAudio's Parakeet or WhisperKit drop in behind the same protocol.
 - **`TextFormatter`** — a cloud implementation (Claude) drops in here for
   Command Mode and a high-quality tier, off by default.
 
